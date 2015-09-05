@@ -69,9 +69,15 @@ class KontsevichGraph(DiGraph):
             self.set_vertices({v : None for v in self})
             self.set_vertices({v : n for (v,n) in zip(vs, range(0,len(vs)))})
         return [k for (k,v) in sorted(self.get_vertices().items()) if not v is None]
+    
+    def internal_vertices(self):
+        """
+        Returns the internal vertices.
+        """
+        return [v for v in self if not v in self.ground_vertices()]
 
     def _repr_(self):
-        n = self.order() - len(self.ground_vertices())
+        n = len(self.internal_vertices())
         m = len(self.ground_vertices())
         return 'Kontsevich graph with %d vertices on %d ground vertices' % (n, m)
         
