@@ -162,7 +162,7 @@ class KontsevichGraph(DiGraph):
 
     def __pow__(self, exponent):
         """
-        Returns the product of self with itself, exponent times.
+        Returns the product of ``self`` with itself, ``exponent`` times.
 
         EXAMPLES::
 
@@ -183,7 +183,7 @@ class KontsevichGraph(DiGraph):
 
     def factor(self):
         """
-        Returns prime factorization.
+        Returns the prime factorization of the graph.
 
         EXAMPLES::
 
@@ -207,7 +207,7 @@ class KontsevichGraph(DiGraph):
         
     def is_prime(self):
         """
-        Returns whether the graph is a product
+        Whether the graph is prime.
 
         EXAMPLES::
 
