@@ -4,6 +4,8 @@ Kontsevich graphs
 """
 from sage.graphs.digraph import DiGraph
 from sage.groups.perm_gps.permgroup_named import SymmetricGroup
+from sage.structure.factorization import Factorization
+from sage.rings.integer import Integer
 
 class KontsevichGraph(DiGraph):
     def __init__(self, *args, **kwargs):
@@ -138,3 +140,86 @@ class KontsevichGraph(DiGraph):
         for KG in other.internal_vertex_relabelings():
             if DiGraph(self, weighted=True) == DiGraph(KG, weighted=True): return True
         return False
+
+    def __mul__(self, other):
+        """
+        Returns the product of self and other.
+
+        EXAMPLES::
+
+            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG1*KG1 == KG2
+            True
+        """
+        assert isinstance(other, KontsevichGraph)
+        assert self.ground_vertices() == other.ground_vertices()
+        assert self.internal_vertices_normalized() and other.internal_vertices_normalized()
+        sigma = lambda v: v+len(self.internal_vertices()) if v in other.internal_vertices() else v
+        multiplicand = KontsevichGraph(other, ground_vertices=other.ground_vertices())
+        multiplicand.relabel(sigma)
+        return self.union(multiplicand)
+
+    def __pow__(self, exponent):
+        """
+        Returns the product of self with itself, exponent times.
+
+        EXAMPLES::
+
+            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG1^3
+            Kontsevich graph with 3 vertices on 2 ground vertices
+        """
+        assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
+        assert isinstance(exponent, int) or isinstance(exponent, Integer)
+        assert exponent >= 0
+        product = KontsevichGraph({v : {} for v in self.ground_vertices()}, ground_vertices=self.ground_vertices())
+        for n in range(0,exponent):
+            factor = KontsevichGraph(self, ground_vertices=self.ground_vertices()) # a copy
+            sigma = lambda v: v+n*len(self.internal_vertices()) if v in self.internal_vertices() else v
+            factor.relabel(sigma)
+            product = product.union(factor)
+        return product
+
+    def factor(self):
+        """
+        Returns prime factorization.
+
+        EXAMPLES::
+
+            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG.factor()
+            (Kontsevich graph with 1 vertices on 2 ground vertices)^2
+
+        ALGORITHM::
+
+            Delete ground vertices; the remaining connected components correspond to the prime factors.
+        """
+        floorless = DiGraph(self, weighted=True, immutable=False)
+        floorless.delete_vertices(self.ground_vertices())
+        factors = []
+        for C in floorless.connected_components():
+            P = self.subgraph(vertices=C + self.ground_vertices())
+            P_KG = KontsevichGraph(P, ground_vertices=self.ground_vertices())
+            P_KG.normalize_vertex_labels()
+            factors.append(P_KG)
+        return Factorization([(f,1) for f in factors])
+        
+    def is_prime(self):
+        """
+        Returns whether the graph is a product
+
+        EXAMPLES::
+
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G']).is_prime()
+            True
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G']).is_prime()
+            False
+
+        ALGORITHM::
+
+            Delete ground vertices; count connected components (which correspond to prime factors).
+        """
+        floorless = DiGraph(self, immutable=False)
+        floorless.delete_vertices(self.ground_vertices())
+        return len(floorless.connected_components()) == 1
