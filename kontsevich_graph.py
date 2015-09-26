@@ -3,6 +3,7 @@ Kontsevich graphs
 
 """
 from sage.graphs.digraph import DiGraph
+from sage.groups.perm_gps.permgroup_named import SymmetricGroup
 
 class KontsevichGraph(DiGraph):
     def __init__(self, *args, **kwargs):
@@ -74,7 +75,7 @@ class KontsevichGraph(DiGraph):
         """
         Returns the internal vertices.
         """
-        return [v for v in self if not v in self.ground_vertices()]
+        return sorted([v for v in self if not v in self.ground_vertices()])
 
     def _repr_(self):
         n = len(self.internal_vertices())
@@ -97,3 +98,43 @@ class KontsevichGraph(DiGraph):
         immutable = getattr(self, '_immutable', False) and getattr(other, '_immutable', False)
         ground_vertices = list(set(self.ground_vertices()) | set(other.ground_vertices()))
         return KontsevichGraph(G, ground_vertices=ground_vertices, immutable=immutable)
+
+    def normalize_vertex_labels(self):
+        """
+        Label internal vertices 1, ...,  n.
+        Label external vertices F, G, ...
+        """
+        relabeling = {v : n + 1 for (n, v) in enumerate(self.internal_vertices())}
+        relabeling.update({v : chr(70 + n) for (n, v) in enumerate(self.ground_vertices())})
+        self.relabel(relabeling)
+
+    def internal_vertices_normalized(self):
+        """
+        Whether the internal vertices are equal to 1, ..., n.
+        """
+        n = len(self.internal_vertices())
+        return self.internal_vertices() == range(1,n+1)
+
+    def internal_vertex_relabelings(self):
+        """
+        Yields all possible internal vertex relabelings as Kontsevich graphs.
+        """
+        assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
+
+        for sigma in SymmetricGroup(self.internal_vertices()):
+            G = DiGraph(self, weighted=True, immutable=False)
+            G.relabel(lambda v: sigma(v) if v in self.internal_vertices() else v)
+            yield KontsevichGraph(G, ground_vertices=self.ground_vertices(), immutable=True)
+
+    def __eq__(self, other):
+        """
+        Compare self and other for equality.
+        Kontsevich graphs are considered equal if the underlying DiGraphs differ only in their internal vertex labeling.
+        """
+        assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
+
+        if len(self) != len(other): return False
+        if len(self.internal_vertices()) != len(other.internal_vertices()): return False
+        for KG in other.internal_vertex_relabelings():
+            if DiGraph(self, weighted=True) == DiGraph(KG, weighted=True): return True
+        return False
