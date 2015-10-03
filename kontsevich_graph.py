@@ -231,6 +231,8 @@ def kontsevich_graphs(n, m=2, cycles=True, modulo_edge_labeling=False, only_prim
 
     INPUT::
 
+    - ``n`` (integer) -- number of internal vertices.
+    - ``m`` (integer, default 2) -- number of ground vertices.
     - ``cycles`` (boolean, default True): whether to yield graphs with cycles.
     - ``modulo_edge_labeling`` (boolean, default False): if True, yield only one representative of each class of graphs which are equal up to edge labeling.
     - ``only_primes`` (boolean, default False): whether to yield only prime graphs.
