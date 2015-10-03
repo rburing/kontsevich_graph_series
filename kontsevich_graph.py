@@ -6,6 +6,7 @@ from sage.graphs.digraph import DiGraph
 from sage.groups.perm_gps.permgroup_named import SymmetricGroup
 from sage.structure.factorization import Factorization
 from sage.rings.integer import Integer
+from itertools import product, ifilter
 
 class KontsevichGraph(DiGraph):
     def __init__(self, *args, **kwargs):
@@ -223,3 +224,63 @@ class KontsevichGraph(DiGraph):
         floorless = DiGraph(self, immutable=False)
         floorless.delete_vertices(self.ground_vertices())
         return len(floorless.connected_components()) == 1
+
+def kontsevich_graphs(n, m=2, cycles=True, modulo_edge_labeling=False, only_primes=False, positive_differential_order=False):
+    """
+    Generates KontsevichGraphs with ``n`` internal vertices and ``m`` ground vertices.
+
+    INPUT::
+
+    - ``cycles`` (boolean, default True): whether to yield graphs with cycles.
+    - ``modulo_edge_labeling`` (boolean, default False): if True, yield only one representative of each class of graphs which are equal up to edge labeling.
+    - ``only_primes`` (boolean, default False): whether to yield only prime graphs.
+    - ``positive_differential_order`` (boolean, default False): whether to yield only graphs whose ground vertices have in-degree > 0.
+
+    EXAMPLES::
+        sage: for n in range(1,4):
+        ....:     print len(list(kontsevich_graphs(n))) == (n*(n+1))^n
+        True
+        True
+        True
+    """
+    def all_of_them():
+        ground_vertices = [chr(70+k) for k in range(0,m)]
+        internal_vertices = range(1,n+1)
+        H = DiGraph({v : {} for v in ground_vertices}, weighted=True)
+        H.add_vertices(internal_vertices)
+        def possible_targets(internal_vertex):
+            for v,w in product(H.vertices(), repeat=2):
+                if not internal_vertex in [v,w] and v != w:
+                    yield (v,w)
+        for L in product(*[possible_targets(v) for v in internal_vertices]):
+            G = copy(H)
+            for v in internal_vertices:
+                l, r = L[v-1]
+                G.add_edge(v, l, 'L')
+                G.add_edge(v, r, 'R')
+            KG = KontsevichGraph(G, ground_vertices=ground_vertices, immutable=True)
+            yield KG
+
+    it = all_of_them()
+
+    if not cycles:
+        it = ifilter(lambda KG: KG.all_simple_cycles() == [], it)
+
+    def filter_unique(it, key = lambda x : x):
+        seen = set()
+        for el in it:
+            k = key(el)
+            if not k in seen:
+                seen.add(k)
+                yield el
+
+    if modulo_edge_labeling:
+        it = filter_unique(it, lambda KG: frozenset(DiGraph(KG1, weighted=False, immutable=True) for KG1 in KG.internal_vertex_relabelings()))
+
+    if only_primes:
+        it = ifilter(lambda KG: KG.is_prime(), it)
+
+    if positive_differential_order:
+        it = ifilter(lambda KG: all(KG.in_degree(v) > 0 for v in KG.ground_vertices()), it)
+
+    return it
