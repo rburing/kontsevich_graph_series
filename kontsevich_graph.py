@@ -38,11 +38,8 @@ class KontsevichGraph(DiGraph):
         else:                                   # copying
             ground_vertices = args[0].ground_vertices()
 
-        immutable = kwargs.get('immutable', False)
-        kwargs['immutable'] = False
         super(KontsevichGraph, self).__init__(*args, **kwargs)
         self.ground_vertices(ground_vertices)
-        setattr(self, '_immutable', immutable)
     
     def ground_vertices(self, vs=None):
         """
@@ -59,10 +56,13 @@ class KontsevichGraph(DiGraph):
             ['F', 'G']
             sage: KG.ground_vertices(['F'])
             ['F']
+
+        .. NOTE::
+            
+            Ground vertices of immutable KontsevichGraphs can also be changed,
+            as a consequence of the implementation.
         """
         if not vs is None:
-            if getattr(self, '_immutable', False):
-                raise NotImplementedError('The ground vertices of an immutable KontsevichGraph do not change.')
             if not isinstance(vs, list):
                 raise ValueError('Input must be a list of vertices.')
             if not all(v in self for v in vs):
