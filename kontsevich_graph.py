@@ -142,6 +142,14 @@ class KontsevichGraph(DiGraph):
             if DiGraph(self, weighted=True) == DiGraph(KG, weighted=True): return True
         return False
 
+    def __hash__(self):
+        """
+        Hash an immutable graph.
+        """
+        if getattr(self, "_immutable", False):
+            return hash(frozenset((tuple(KG.vertices()), tuple(KG.edges())) for KG in self.internal_vertex_relabelings()))
+        raise TypeError, "graph is mutable, and thus not hashable"
+
     def __mul__(self, other):
         """
         Returns the product of self and other.
@@ -225,7 +233,13 @@ class KontsevichGraph(DiGraph):
         floorless.delete_vertices(self.ground_vertices())
         return len(floorless.connected_components()) == 1
 
-def kontsevich_graphs(n, m=2, cycles=True, modulo_edge_labeling=False, only_primes=False, positive_differential_order=False):
+    def multiplicity(self):
+        """
+        The number of different DiGraphs (with different internal vertex labeling) that represent this KontsevichGraph.
+        """
+        return len(set(DiGraph(KG, weighted=True, immutable=True) for KG in self.internal_vertex_relabelings()))
+
+def kontsevich_graphs(n, m=2, cycles=True, unique=False, modulo_edge_labeling=False, only_primes=False, positive_differential_order=False):
     """
     Generates KontsevichGraphs with ``n`` internal vertices and ``m`` ground vertices.
 
@@ -234,6 +248,7 @@ def kontsevich_graphs(n, m=2, cycles=True, modulo_edge_labeling=False, only_prim
     - ``n`` (integer) -- number of internal vertices.
     - ``m`` (integer, default 2) -- number of ground vertices.
     - ``cycles`` (boolean, default True): whether to yield graphs with cycles.
+    - ``unique`` (boolean, default False): if True, yield no duplicate graphs (possible duplicates differ only in their internal vertex labeling).
     - ``modulo_edge_labeling`` (boolean, default False): if True, yield only one representative of each class of graphs which are equal up to edge labeling.
     - ``only_primes`` (boolean, default False): whether to yield only prime graphs.
     - ``positive_differential_order`` (boolean, default False): whether to yield only graphs whose ground vertices have in-degree > 0.
@@ -275,6 +290,9 @@ def kontsevich_graphs(n, m=2, cycles=True, modulo_edge_labeling=False, only_prim
             if not k in seen:
                 seen.add(k)
                 yield el
+
+    if unique:
+        it = filter_unique(it)
 
     if modulo_edge_labeling:
         it = filter_unique(it, lambda KG: frozenset(DiGraph(KG1, weighted=False, immutable=True) for KG1 in KG.internal_vertex_relabelings()))
