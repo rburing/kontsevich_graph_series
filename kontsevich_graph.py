@@ -16,7 +16,7 @@ class KontsevichGraph(DiGraph):
         INPUT:
 
          - All the usual arguments to DiGraph.
-         - ``ground_vertices`` -- a list of vertices to be ground vertices.
+         - ``ground_vertices`` -- a tuple of vertices to be ground vertices.
 
         OUTPUT:
 
@@ -24,9 +24,9 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KontsevichGraph(ground_vertices=[])
+            sage: KontsevichGraph(ground_vertices=(,))
             Kontsevich graph with 0 vertices on 0 ground vertices
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F', 'G'])
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F', 'G'))
             Kontsevich graph with 1 vertices on 2 ground vertices
         """
         kwargs['weighted'] = True               # edge labels are important in equality testing
@@ -48,15 +48,15 @@ class KontsevichGraph(DiGraph):
 
         INPUT:
 
-         - ``vs`` -- if not None, then this becomes the new list of ground vertices.
+         - ``vs`` -- if not None, then this becomes the new tuple of ground vertices.
 
         EXAMPLES::
 
-            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F', 'G'])
+            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F', 'G'))
             sage: KG.ground_vertices()
-            ['F', 'G']
-            sage: KG.ground_vertices(['F'])
-            ['F']
+            ('F', 'G')
+            sage: KG.ground_vertices(('F',))
+            ('F',)
 
         .. NOTE::
             
@@ -64,15 +64,15 @@ class KontsevichGraph(DiGraph):
             as a consequence of the implementation.
         """
         if not vs is None:
-            if not isinstance(vs, list):
-                raise ValueError('Input must be a list of vertices.')
+            if not isinstance(vs, tuple):
+                raise ValueError('Input must be a tuple of vertices.')
             if not all(v in self for v in vs):
                 raise ValueError('Input vertices must exist in the Kontsevich graph.')
             if not all(self.out_degree(v) == 0 for v in vs):
                 raise ValueError('Prospective ground vertices must have out-degree zero.')
             self.set_vertices({v : None for v in self})
             self.set_vertices({v : n for (v,n) in zip(vs, range(0,len(vs)))})
-        return [k for (k,v) in sorted(self.get_vertices().items()) if not v is None]
+        return tuple(k for (k,v) in sorted(self.get_vertices().items()) if not v is None)
     
     def internal_vertices(self):
         """
@@ -99,7 +99,7 @@ class KontsevichGraph(DiGraph):
         """
         G = super(KontsevichGraph, self).union(other)
         immutable = getattr(self, '_immutable', False) and getattr(other, '_immutable', False)
-        ground_vertices = list(set(self.ground_vertices()) | set(other.ground_vertices()))
+        ground_vertices = tuple(set(self.ground_vertices()) | set(other.ground_vertices()))
         return KontsevichGraph(G, ground_vertices=ground_vertices, immutable=immutable)
 
     def normalize_vertex_labels(self):
@@ -156,8 +156,8 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
-            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
             sage: KG1*KG1 == KG2
             True
         """
@@ -177,7 +177,7 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
             sage: KG1^3
             Kontsevich graph with 3 vertices on 2 ground vertices
         """
@@ -198,7 +198,7 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G'])
+            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
             sage: KG.factor()
             (Kontsevich graph with 1 vertices on 2 ground vertices)^2
 
@@ -210,7 +210,7 @@ class KontsevichGraph(DiGraph):
         floorless.delete_vertices(self.ground_vertices())
         factors = []
         for C in floorless.connected_components():
-            P = self.subgraph(vertices=C + self.ground_vertices())
+            P = self.subgraph(vertices=C + list(self.ground_vertices()))
             P_KG = KontsevichGraph(P, ground_vertices=self.ground_vertices())
             P_KG.normalize_vertex_labels()
             factors.append(P_KG)
@@ -222,9 +222,9 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G']).is_prime()
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G')).is_prime()
             True
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=['F','G']).is_prime()
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G')).is_prime()
             False
 
         ALGORITHM::
@@ -263,7 +263,7 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False, modulo_edge_labeling=Fa
         True
     """
     def all_of_them():
-        ground_vertices = [chr(70+k) for k in range(0,m)]
+        ground_vertices = tuple(chr(70+k) for k in range(0,m))
         internal_vertices = range(1,n+1)
         H = DiGraph({v : {} for v in ground_vertices}, weighted=True)
         H.add_vertices(internal_vertices)
