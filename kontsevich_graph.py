@@ -167,6 +167,8 @@ class KontsevichGraph(DiGraph):
         sigma = lambda v: v+len(self.internal_vertices()) if v in other.internal_vertices() else v
         multiplicand = KontsevichGraph(other, ground_vertices=other.ground_vertices())
         multiplicand.relabel(sigma)
+        if getattr(self, '_immutable', False):
+            multiplicand._immutable = True
         return self.union(multiplicand)
 
     def __pow__(self, exponent):
