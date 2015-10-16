@@ -44,11 +44,15 @@ class KontsevichGraph(DiGraph):
     
     def ground_vertices(self, vs=None):
         """
-        Returns or sets the ground vertices.
+        Return and possibly set the ground vertices.
 
         INPUT:
 
          - ``vs`` -- if not None, then this becomes the new tuple of ground vertices.
+
+        OUTPUT:
+
+        The tuple of current ground vertices.
 
         EXAMPLES::
 
@@ -76,7 +80,7 @@ class KontsevichGraph(DiGraph):
     
     def internal_vertices(self):
         """
-        Returns the internal vertices.
+        Return the internal vertices.
         """
         return sorted([v for v in self if not v in self.ground_vertices()])
 
@@ -87,7 +91,7 @@ class KontsevichGraph(DiGraph):
         
     def show(self, *args, **kwargs):
         """
-        Shows the Kontsevich graph.
+        Show the Kontsevich graph.
         """
         if not 'edge_labels' in kwargs:
             kwargs['edge_labels'] = True        # show edge labels by default
@@ -95,7 +99,7 @@ class KontsevichGraph(DiGraph):
 
     def union(self, other):
         """
-        Returns the union of self and other.
+        Return the union of self and other.
         """
         G = super(KontsevichGraph, self).union(other)
         immutable = getattr(self, '_immutable', False) and getattr(other, '_immutable', False)
@@ -120,7 +124,7 @@ class KontsevichGraph(DiGraph):
 
     def internal_vertex_relabelings(self):
         """
-        Yields all possible internal vertex relabelings as Kontsevich graphs.
+        Yield all possible internal vertex relabelings as Kontsevich graphs.
         """
         assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
 
@@ -152,7 +156,7 @@ class KontsevichGraph(DiGraph):
 
     def __mul__(self, other):
         """
-        Returns the product of self and other.
+        Return the product of self and other.
 
         EXAMPLES::
 
@@ -173,7 +177,7 @@ class KontsevichGraph(DiGraph):
 
     def __pow__(self, exponent):
         """
-        Returns the product of ``self`` with itself, ``exponent`` times.
+        Return the product of ``self`` with itself, ``exponent`` times.
 
         EXAMPLES::
 
@@ -194,7 +198,7 @@ class KontsevichGraph(DiGraph):
 
     def factor(self):
         """
-        Returns the prime factorization of the graph.
+        Return the prime factorization of the graph.
 
         EXAMPLES::
 
@@ -243,7 +247,7 @@ class KontsevichGraph(DiGraph):
 
 def kontsevich_graphs(n, m=2, cycles=True, unique=False, modulo_edge_labeling=False, only_primes=False, positive_differential_order=False):
     """
-    Generates KontsevichGraphs with ``n`` internal vertices and ``m`` ground vertices.
+    Generate KontsevichGraphs with ``n`` internal vertices and ``m`` ground vertices.
 
     INPUT::
 
