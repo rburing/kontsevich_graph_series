@@ -16,7 +16,7 @@ class KontsevichGraph(DiGraph):
         INPUT:
 
          - All the usual arguments to DiGraph.
-         - ``ground_vertices`` -- a tuple of vertices to be ground vertices.
+         - ``ground_vertices`` -- a tuple of vertices to be ground vertices
 
         OUTPUT:
 
@@ -26,17 +26,21 @@ class KontsevichGraph(DiGraph):
 
             sage: KontsevichGraph(ground_vertices=())
             Kontsevich graph with 0 vertices on 0 ground vertices
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F', 'G'))
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....:                  'G' : 'R'}}, ground_vertices=('F', 'G'))
             Kontsevich graph with 1 vertices on 2 ground vertices
         """
-        kwargs['weighted'] = True               # edge labels are important in equality testing
+        # Edge labels are important in equality testing:
+        kwargs['weighted'] = True
         copying = len(args) == 1 and isinstance(args[0], KontsevichGraph)
         if not copying and not 'ground_vertices' in kwargs:
-            raise TypeError('KontsevichGraph() needs keyword argument ground_vertices, or an existing KontsevichGraph as the first argument.')
+            raise TypeError('KontsevichGraph() needs keyword argument ' +
+                    'ground_vertices, or an existing KontsevichGraph ' +
+                    'as the first argument.')
         if 'ground_vertices' in kwargs:
             ground_vertices = kwargs['ground_vertices']
             del kwargs['ground_vertices']
-        else:                                   # copying
+        else: # if copying:
             ground_vertices = args[0].ground_vertices()
 
         super(KontsevichGraph, self).__init__(*args, **kwargs)
@@ -48,7 +52,8 @@ class KontsevichGraph(DiGraph):
 
         INPUT:
 
-         - ``vs`` -- if not None, then this becomes the new tuple of ground vertices.
+         - ``vs`` -- if not None, then this becomes the new tuple of
+           ground vertices.
 
         OUTPUT:
 
@@ -56,7 +61,8 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F', 'G'))
+            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}}, ground_vertices=('F', 'G'))
             sage: KG.ground_vertices()
             ('F', 'G')
             sage: KG.ground_vertices(('F',))
@@ -71,12 +77,15 @@ class KontsevichGraph(DiGraph):
             if not isinstance(vs, tuple):
                 raise ValueError('Input must be a tuple of vertices.')
             if not all(v in self for v in vs):
-                raise ValueError('Input vertices must exist in the Kontsevich graph.')
+                raise ValueError('Input vertices must exist in the ' +
+                                 'Kontsevich graph.')
             if not all(self.out_degree(v) == 0 for v in vs):
-                raise ValueError('Prospective ground vertices must have out-degree zero.')
+                raise ValueError('Prospective ground vertices must have ' + 
+                                 'out-degree zero.')
             self.set_vertices({v : None for v in self})
             self.set_vertices({v : n for (v,n) in zip(vs, range(0,len(vs)))})
-        return tuple(k for (k,v) in sorted(self.get_vertices().items()) if not v is None)
+        return tuple(k for (k,v) in sorted(self.get_vertices().items()) \
+                     if not v is None)
     
     def internal_vertices(self):
         """
@@ -87,7 +96,8 @@ class KontsevichGraph(DiGraph):
     def _repr_(self):
         n = len(self.internal_vertices())
         m = len(self.ground_vertices())
-        return 'Kontsevich graph with %d vertices on %d ground vertices' % (n, m)
+        return 'Kontsevich graph with %d vertices on %d ground vertices' % \
+               (n, m)
         
     def show(self, *args, **kwargs):
         """
@@ -102,17 +112,22 @@ class KontsevichGraph(DiGraph):
         Return the union of self and other.
         """
         G = super(KontsevichGraph, self).union(other)
-        immutable = getattr(self, '_immutable', False) and getattr(other, '_immutable', False)
-        ground_vertices = tuple(set(self.ground_vertices()) | set(other.ground_vertices()))
-        return KontsevichGraph(G, ground_vertices=ground_vertices, immutable=immutable)
+        immutable = getattr(self, '_immutable', False) and \
+                    getattr(other, '_immutable', False)
+        ground_vertices = tuple(set(self.ground_vertices()) | \
+                                set(other.ground_vertices()))
+        return KontsevichGraph(G, ground_vertices=ground_vertices, \
+                               immutable=immutable)
 
     def normalize_vertex_labels(self):
         """
         Label internal vertices 1, ...,  n.
         Label external vertices F, G, ...
         """
-        relabeling = {v : n + 1 for (n, v) in enumerate(self.internal_vertices())}
-        relabeling.update({v : chr(70 + n) for (n, v) in enumerate(self.ground_vertices())})
+        relabeling = {v : n + 1 for (n, v) in \
+                      enumerate(self.internal_vertices())}
+        relabeling.update({v : chr(70 + n) for (n, v) in \
+                           enumerate(self.ground_vertices())})
         self.relabel(relabeling)
 
     def internal_vertices_normalized(self):
@@ -120,30 +135,38 @@ class KontsevichGraph(DiGraph):
         Whether the internal vertices are equal to 1, ..., n.
         """
         n = len(self.internal_vertices())
-        return self.internal_vertices() == range(1,n+1)
+        return self.internal_vertices() == range(1, n + 1)
 
     def internal_vertex_relabelings(self):
         """
         Yield all possible internal vertex relabelings as Kontsevich graphs.
         """
-        assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
+        assert self.internal_vertices_normalized(), \
+               "Internal vertices should be normalized."
 
         for sigma in SymmetricGroup(self.internal_vertices()):
             G = DiGraph(self, weighted=True, immutable=False)
-            G.relabel(lambda v: sigma(v) if v in self.internal_vertices() else v)
-            yield KontsevichGraph(G, ground_vertices=self.ground_vertices(), immutable=True)
+            G.relabel(lambda v: sigma(v) if v in self.internal_vertices() \
+                                else v)
+            yield KontsevichGraph(G, ground_vertices=self.ground_vertices(), \
+                                  immutable=True)
 
     def __eq__(self, other):
         """
         Compare self and other for equality.
-        Kontsevich graphs are considered equal if the underlying DiGraphs differ only in their internal vertex labeling.
+
+        Kontsevich graphs are considered equal if the underlying DiGraphs
+        differ only in their internal vertex labeling.
         """
-        assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
+        assert self.internal_vertices_normalized(), \
+               "Internal vertices should be normalized."
 
         if len(self) != len(other): return False
-        if len(self.internal_vertices()) != len(other.internal_vertices()): return False
+        if len(self.internal_vertices()) != len(other.internal_vertices()):
+            return False
         for KG in other.internal_vertex_relabelings():
-            if DiGraph(self, weighted=True) == DiGraph(KG, weighted=True): return True
+            if DiGraph(self, weighted=True) == DiGraph(KG, weighted=True):
+                return True
         return False
 
     def __hash__(self):
@@ -151,7 +174,8 @@ class KontsevichGraph(DiGraph):
         Hash an immutable graph.
         """
         if getattr(self, "_immutable", False):
-            return hash(frozenset((tuple(KG.vertices()), tuple(KG.edges())) for KG in self.internal_vertex_relabelings()))
+            return hash(frozenset((tuple(KG.vertices()), tuple(KG.edges())) \
+                                  for KG in self.internal_vertex_relabelings()))
         raise TypeError, "graph is mutable, and thus not hashable"
 
     def __mul__(self, other):
@@ -160,16 +184,23 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
-            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            ....: ground_vertices=('F','G'))
             sage: KG1*KG1 == KG2
             True
         """
         assert isinstance(other, KontsevichGraph)
         assert self.ground_vertices() == other.ground_vertices()
-        assert self.internal_vertices_normalized() and other.internal_vertices_normalized()
-        sigma = lambda v: v+len(self.internal_vertices()) if v in other.internal_vertices() else v
-        multiplicand = KontsevichGraph(other, ground_vertices=other.ground_vertices())
+        assert self.internal_vertices_normalized() and \
+               other.internal_vertices_normalized()
+        sigma = lambda v: v+len(self.internal_vertices()) \
+                          if v in other.internal_vertices() \
+                          else v
+        multiplicand = KontsevichGraph(other, \
+                                       ground_vertices=other.ground_vertices())
         multiplicand.relabel(sigma)
         if getattr(self, '_immutable', False):
             multiplicand._immutable = True
@@ -181,17 +212,24 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}}, ground_vertices=('F','G'))
             sage: KG1^3
             Kontsevich graph with 3 vertices on 2 ground vertices
         """
-        assert self.internal_vertices_normalized(), "Internal vertices should be normalized."
+        assert self.internal_vertices_normalized(), \
+               "Internal vertices should be normalized."
         assert isinstance(exponent, int) or isinstance(exponent, Integer)
         assert exponent >= 0
-        product = KontsevichGraph({v : {} for v in self.ground_vertices()}, ground_vertices=self.ground_vertices())
+        product = KontsevichGraph({v : {} for v in self.ground_vertices()}, \
+                                  ground_vertices=self.ground_vertices())
         for n in range(0,exponent):
-            factor = KontsevichGraph(self, ground_vertices=self.ground_vertices()) # a copy
-            sigma = lambda v: v+n*len(self.internal_vertices()) if v in self.internal_vertices() else v
+            # Make a copy:
+            factor = KontsevichGraph(self, \
+                                     ground_vertices=self.ground_vertices())
+            sigma = lambda v: v+n*len(self.internal_vertices()) \
+                              if v in self.internal_vertices() \
+                              else v
             factor.relabel(sigma)
             product = product.union(factor)
         return product
@@ -202,13 +240,16 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            ....: ground_vertices=('F','G'))
             sage: KG.factor()
             (Kontsevich graph with 1 vertices on 2 ground vertices)^2
 
         ALGORITHM::
 
-            Delete ground vertices; the remaining connected components correspond to the prime factors.
+        Delete ground vertices; the remaining connected components
+        correspond to the prime factors.
         """
         floorless = DiGraph(self, weighted=True, immutable=False)
         floorless.delete_vertices(self.ground_vertices())
@@ -226,14 +267,18 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G')).is_prime()
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}}, ground_vertices=('F','G')).is_prime()
             True
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F','G')).is_prime()
+            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            ....: ground_vertices=('F','G')).is_prime()
             False
 
         ALGORITHM::
 
-            Delete ground vertices; count connected components (which correspond to prime factors).
+        Delete ground vertices; count connected components
+        (which correspond to prime factors).
         """
         floorless = DiGraph(self, immutable=False)
         floorless.delete_vertices(self.ground_vertices())
@@ -241,23 +286,33 @@ class KontsevichGraph(DiGraph):
 
     def multiplicity(self):
         """
-        The number of different DiGraphs (with different internal vertex labeling) that represent this KontsevichGraph.
+        The number of different DiGraphs (with different internal vertex
+        labeling) that represent this KontsevichGraph.
         """
-        return len(set(DiGraph(KG, weighted=True, immutable=True) for KG in self.internal_vertex_relabelings()))
+        return len(set(DiGraph(KG, weighted=True, immutable=True) \
+                       for KG in self.internal_vertex_relabelings()))
 
-def kontsevich_graphs(n, m=2, cycles=True, unique=False, modulo_edge_labeling=False, only_primes=False, positive_differential_order=False):
+def kontsevich_graphs(n, m=2, cycles=True, unique=False,
+                      modulo_edge_labeling=False, only_primes=False,
+                      positive_differential_order=False):
     """
-    Generate KontsevichGraphs with ``n`` internal vertices and ``m`` ground vertices.
+    Generate KontsevichGraphs with ``n`` internal vertices and
+    ``m`` ground vertices.
 
     INPUT::
 
     - ``n`` (integer) -- number of internal vertices.
     - ``m`` (integer, default 2) -- number of ground vertices.
     - ``cycles`` (boolean, default True): whether to yield graphs with cycles.
-    - ``unique`` (boolean, default False): if True, yield no duplicate graphs (possible duplicates differ only in their internal vertex labeling).
-    - ``modulo_edge_labeling`` (boolean, default False): if True, yield only one representative of each class of graphs which are equal up to edge labeling.
-    - ``only_primes`` (boolean, default False): whether to yield only prime graphs.
-    - ``positive_differential_order`` (boolean, default False): whether to yield only graphs whose ground vertices have in-degree > 0.
+    - ``unique`` (boolean, default False): if True, yield no duplicate graphs
+      (possible duplicates differ only in their internal vertex labeling).
+    - ``modulo_edge_labeling`` (boolean, default False): if True, yield only
+      one representative of each class of graphs which are equal up to
+      edge labeling.
+    - ``only_primes`` (boolean, default False): whether to yield only
+      prime graphs.
+    - ``positive_differential_order`` (boolean, default False): whether to
+      yield only graphs whose ground vertices have in-degree > 0.
 
     EXAMPLES::
         sage: for n in range(1,4):
@@ -281,7 +336,8 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False, modulo_edge_labeling=Fa
                 l, r = L[v-1]
                 G.add_edge(v, l, 'L')
                 G.add_edge(v, r, 'R')
-            KG = KontsevichGraph(G, ground_vertices=ground_vertices, immutable=True)
+            KG = KontsevichGraph(G, ground_vertices=ground_vertices, \
+                                 immutable=True)
             yield KG
 
     it = all_of_them()
@@ -301,12 +357,15 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False, modulo_edge_labeling=Fa
         it = filter_unique(it)
 
     if modulo_edge_labeling:
-        it = filter_unique(it, lambda KG: frozenset(DiGraph(KG1, weighted=False, immutable=True) for KG1 in KG.internal_vertex_relabelings()))
+        it = filter_unique(it, key = lambda KG: \
+                frozenset(DiGraph(KG1, weighted=False, immutable=True) \
+                          for KG1 in KG.internal_vertex_relabelings()))
 
     if only_primes:
         it = ifilter(lambda KG: KG.is_prime(), it)
 
     if positive_differential_order:
-        it = ifilter(lambda KG: all(KG.in_degree(v) > 0 for v in KG.ground_vertices()), it)
+        it = ifilter(lambda KG: all(KG.in_degree(v) > 0 \
+                                    for v in KG.ground_vertices()), it)
 
     return it
