@@ -24,7 +24,7 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KontsevichGraph(ground_vertices=(,))
+            sage: KontsevichGraph(ground_vertices=())
             Kontsevich graph with 0 vertices on 0 ground vertices
             sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}}, ground_vertices=('F', 'G'))
             Kontsevich graph with 1 vertices on 2 ground vertices
