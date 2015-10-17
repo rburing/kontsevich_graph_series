@@ -133,7 +133,8 @@ class KontsevichGraphSum(ModuleElement):
             from sage.symbolic.operators import add_vararg
             is_sum = lambda x: self.base_ring()(x).operator() == add_vararg
             parenthesize = lambda c: '(%s)' % c if is_sum(c) else c
-        return ' + '.join('%s*(%s)' % (parenthesize(c), g) for (c,g) in self._terms)
+        return ' + '.join('%s*(%s)' % (parenthesize(c), g)
+                          for (c,g) in self._terms)
 
 class KontsevichGraphSums(Module):
     """
