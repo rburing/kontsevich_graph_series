@@ -8,6 +8,14 @@ from sage.structure.factorization import Factorization
 from sage.rings.integer import Integer
 from itertools import product, ifilter
 
+def filter_unique(it, key = lambda x : x):
+    seen = set()
+    for el in it:
+        k = key(el)
+        if not k in seen:
+            seen.add(k)
+            yield el
+
 class KontsevichGraph(DiGraph):
     def __init__(self, *args, **kwargs):
         """
@@ -169,22 +177,37 @@ class KontsevichGraph(DiGraph):
         assert self.edge_labels_normalized(), \
                 "Edge labels should be normalized."
 
-        for swap in product([True,False], repeat=len(self.internal_vertices())):
-            KG = self.copy(immutable=False)
-            for v in KG.internal_vertices():
-                if swap[v-1]:
-                    targets = KG.neighbors_out(v)
-                    assert len(targets) == 2
-                    [t1,t2] = targets
-                    l1 = KG.edge_label(v, t1)
-                    l2 = KG.edge_label(v, t2)
-                    KG.set_edge_label(v, t1, l2)
-                    KG.set_edge_label(v, t2, l1)
-            KG = KG.copy(immutable=True)
-            if signs:
-                yield (KG, (-1)**(sum(1 if x else 0 for x in swap) % 2))
-            else:
-                yield KG
+        def all_of_them():
+            for swap in product([True,False],
+                                repeat=len(self.internal_vertices())):
+                KG = self.copy(immutable=False)
+                for v in KG.internal_vertices():
+                    if swap[v-1]:
+                        targets = KG.neighbors_out(v)
+                        assert len(targets) == 2
+                        [t1,t2] = targets
+                        l1 = KG.edge_label(v, t1)
+                        l2 = KG.edge_label(v, t2)
+                        KG.set_edge_label(v, t1, l2)
+                        KG.set_edge_label(v, t2, l1)
+                KG = KG.copy(immutable=True)
+                if signs:
+                    yield (KG, (-1)**(sum(1 if x else 0 for x in swap) % 2))
+                else:
+                    yield KG
+        return filter_unique(all_of_them())
+
+    def is_zero(self):
+        """
+        Whether there are equal relabelings with opposite signs.
+        """
+        self_relabeling_signs = []
+        for (g,s) in self.edge_relabelings(signs=True):
+            if g == self:
+                self_relabeling_signs.append(s)
+                if len(self_relabeling_signs) > 1:
+                    return True
+        return False
 
     def __eq__(self, other):
         """
@@ -388,14 +411,6 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
 
     if not cycles:
         it = ifilter(lambda KG: KG.all_simple_cycles() == [], it)
-
-    def filter_unique(it, key = lambda x : x):
-        seen = set()
-        for el in it:
-            k = key(el)
-            if not k in seen:
-                seen.add(k)
-                yield el
 
     if unique:
         it = filter_unique(it)
