@@ -232,6 +232,8 @@ class KontsevichGraph(DiGraph):
                               else v
             factor.relabel(sigma)
             product = product.union(factor)
+        if getattr(self, '_immutable', False):
+            product = product.copy(immutable=True)
         return product
 
     def factor(self):
