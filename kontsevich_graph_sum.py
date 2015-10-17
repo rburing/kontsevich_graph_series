@@ -11,6 +11,24 @@ class KontsevichGraphSum(ModuleElement):
     def __init__(self, parent, terms):
         """
         Kontsevich graph sum.
+
+        INPUT:
+
+        - ``parent`` -- a ``KontsevichGraphSums`` module.
+        - ``terms`` -- list of ``(coefficient, graph)`` tuples,
+          where ``coefficient`` is in ``parent.base_ring()``,
+          and ``graph`` is an immutable KontsevichGraph.
+
+        OUTPUT:
+
+        A formal sum of Kontsevich graphs.
+
+        EXAMPLES::
+
+            sage: K = KontsevichGraphSums(QQ)
+            sage: KG = KontsevichGraph(ground_vertices=(), immutable=True)
+            sage: KontsevichGraphSum(K, [(1/2, KG)])
+            1/2*(Kontsevich graph with 0 vertices on 0 ground vertices)
         """
         if terms == 0:
             terms = []
@@ -25,19 +43,91 @@ class KontsevichGraphSum(ModuleElement):
         self._terms = terms
         ModuleElement.__init__(self, parent=parent)
     def _rmul_(self, c):
+        """
+        Return the product of ``c`` and ``self``.
+
+        INPUT:
+
+        - ``c`` -- multiplicand.
+
+        OUTPUT:
+
+        Kontsevich graph sum with coefficients ``c`` times those of ``self``.
+
+        EXAMPLES::
+
+            sage: K = KontsevichGraphSums(QQ)
+            sage: KG = KontsevichGraph(ground_vertices=(), immutable=True)
+            sage: 2*KontsevichGraphSum(K, [(1/2, KG)])
+            1*(Kontsevich graph with 0 vertices on 0 ground vertices)
+        """
         return self.parent()([(c*d,g) for (d,g) in self._terms])
     def _add_(self, other):
+        """
+        Return the sum of ``self`` and ``other``.
+
+        INPUT:
+
+        - ``other`` -- a KontsevichGraphSum.
+
+        OUTPUT:
+
+        The sum of ``self`` and ``other``.
+
+        EXAMPLES::
+
+            sage: K = KontsevichGraphSums(QQ)
+            sage: KG = KontsevichGraph(ground_vertices=(), immutable=True)
+            sage: KontsevichGraphSum(K, [(1/2, KG)]) + \
+                  KontsevichGraphSum(K, [(1/2, KG)])
+            1*(Kontsevich graph with 0 vertices on 0 ground vertices)
+        """
         return self.parent()(self._terms + other._terms)
     def __cmp__(self, other):
+        """
+        Compare ``self`` and ``other`` for equality.
+
+        Currently tests for exact equality of the lists of terms.
+
+        INPUT:
+
+        - ``other`` -- a KontsevichGraphSum with the same parent.
+
+        EXAMPLES::
+
+            sage: K = KontsevichGraphSums(QQ)
+            sage: KG = KontsevichGraph(ground_vertices=(), immutable=True)
+            sage: A = KontsevichGraphSum(K, [(1/2, KG)]) + \
+                  KontsevichGraphSum(K, [(1/2, KG)])
+            sage: B = KontsevichGraphSum(K, [(1, KG)])
+            sage: A == B
+            False
+        """
         return cmp(self._terms, other._terms)
     def __hash__(self):
+        """
+        Return the hash value.
+        """
         return hash(tuple(self._terms))
     def reduce(self):
+        """
+        Reduce the sum by collecting terms with the same graph.
+        """
         graphs = set(g for (c,g) in self._terms)
         coefficient = lambda g: sum(c for (c,h) in self._terms if h == g)
         self._terms = [(coefficient(g), g) for g in graphs]
     def _repr_(self):
+        """
+        EXAMPLES::
+
+            sage: K = KontsevichGraphSums(QQ)
+            sage: KG = KontsevichGraph(ground_vertices=(), immutable=True)
+            sage: KontsevichGraphSum(K, [(1/2, KG)])
+            1/2*(Kontsevich graph with 0 vertices on 0 ground vertices)
+        """
         self.reduce()
+        if self._terms == []:
+            return '0'
         parenthesize = lambda c: str(c)
         if is_SymbolicExpressionRing(self.base_ring()):
             from sage.symbolic.operators import add_vararg
@@ -46,13 +136,44 @@ class KontsevichGraphSum(ModuleElement):
         return ' + '.join('%s*(%s)' % (parenthesize(c), g) for (c,g) in self._terms)
 
 class KontsevichGraphSums(Module):
+    """
+    The module of Kontsevich graph sums with coefficients in some ring.
+    """
     Element = KontsevichGraphSum
+    def _repr_(self):
+        """
+        EXAMPLES::
+
+            sage: KontsevichGraphSums(QQ)
+            Module of Kontsevich graph sums over Rational Field
+            sage: KontsevichGraphSums(SR)
+            Module of Kontsevich graph sums over Symbolic Ring
+        """
+        return 'Module of Kontsevich graph sums over %s' % self.base_ring()
     def _element_constructor_(self, terms):
+        """
+        Make a KontsevichGraphSum in ``self`` from ``terms``.
+
+        INPUT:
+
+        - ``terms`` -- KontsevichGraphSum, list of terms, or 0.
+        """
         if isinstance(terms, KontsevichGraphSum): terms = terms._terms
         return self.element_class(self, terms)
     def __cmp__(self, other):
+        """
+        Compare ``self`` and ``other`` for equality.
+        """
         if not isinstance(other, KontsevichGraphSums):
             return cmp(type(other), KontsevichGraphSums)
         return cmp(self.base_ring(), other.base_ring())
     def _an_element_(self):
+        """
+        EXAMPLES::
+
+            sage: KontsevichGraphSums(QQ).an_element()
+            0
+            sage: KontsevichGraphSums(SR).an_element()
+            0
+        """
         return self.element_class(self, [])
