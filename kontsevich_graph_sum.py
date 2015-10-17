@@ -12,6 +12,10 @@ class KontsevichGraphSum(ModuleElement):
         """
         Kontsevich graph sum.
 
+        A formal sum of Kontsevich graphs, modulo the relation that
+        swapping two edges (L and R) originating from an internal vertex
+        introduces a minus sign.
+
         INPUT:
 
         - ``parent`` -- a ``KontsevichGraphSums`` module.
