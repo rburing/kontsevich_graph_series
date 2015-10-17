@@ -216,6 +216,13 @@ class KontsevichGraph(DiGraph):
 
             sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
             ....: 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG1^1 == KG1
+            True
+            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
+            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            ....: ground_vertices=('F','G'))
+            sage: KG1^2 == KG2
+            True
             sage: KG1^3
             Kontsevich graph with 3 vertices on 2 ground vertices
         """
