@@ -173,8 +173,13 @@ class KontsevichGraphSums(Module):
         EXAMPLES::
 
             sage: KontsevichGraphSums(QQ).an_element()
-            0
+            1/2*(Kontsevich graph with 1 vertices on 2 ground vertices)
             sage: KontsevichGraphSums(SR).an_element()
-            0
+            some_variable*(Kontsevich graph with 1 vertices on 2
+            ground vertices)
+
         """
-        return self.element_class(self, [])
+        KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F', 'G'}},
+                             ground_vertices=('F', 'G'),
+                             immutable=True)
+        return self.element_class(self, [(self.base_ring().an_element(), KG)])
