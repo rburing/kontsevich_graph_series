@@ -5,6 +5,7 @@ Kontsevich graph sums
 from sage.kontsevich_graph_series.kontsevich_graph import KontsevichGraph
 from sage.structure.element import ModuleElement
 from sage.modules.module import Module
+from sage.symbolic.ring import is_SymbolicExpressionRing
 
 class KontsevichGraphSum(ModuleElement):
     def __init__(self, parent, terms):
@@ -18,9 +19,9 @@ class KontsevichGraphSum(ModuleElement):
         if not all(isinstance(t, tuple) and len(t) == 2 for t in terms):
             raise TypeError('Terms must be (coefficient, graph) tuples.')
         if not all(c in parent.base_ring() and isinstance(g, KontsevichGraph)
-                   for (c,g) in terms):
+                   and getattr(g, '_immutable', False) for (c,g) in terms):
             raise TypeError('Coefficients must be in base ring, and ' +
-                            'graphs must be KontsevichGraphs.')
+                            'graphs must be immutable KontsevichGraphs.')
         self._terms = terms
         ModuleElement.__init__(self, parent=parent)
     def _rmul_(self, c):
@@ -31,8 +32,18 @@ class KontsevichGraphSum(ModuleElement):
         return cmp(self._terms, other._terms)
     def __hash__(self):
         return hash(tuple(self._terms))
+    def reduce(self):
+        graphs = set(g for (c,g) in self._terms)
+        coefficient = lambda g: sum(c for (c,h) in self._terms if h == g)
+        self._terms = [(coefficient(g), g) for g in graphs]
     def _repr_(self):
-        return repr(self._terms)
+        self.reduce()
+        parenthesize = lambda c: str(c)
+        if is_SymbolicExpressionRing(self.base_ring()):
+            from sage.symbolic.operators import add_vararg
+            is_sum = lambda x: self.base_ring()(x).operator() == add_vararg
+            parenthesize = lambda c: '(%s)' % c if is_sum(c) else c
+        return ' + '.join('%s*(%s)' % (parenthesize(c), g) for (c,g) in self._terms)
 
 class KontsevichGraphSums(Module):
     Element = KontsevichGraphSum
