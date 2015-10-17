@@ -42,6 +42,7 @@ class KontsevichGraphSum(ModuleElement):
                             'graphs must be immutable KontsevichGraphs.')
         self._terms = terms
         ModuleElement.__init__(self, parent=parent)
+
     def _rmul_(self, c):
         """
         Return the product of ``c`` and ``self``.
@@ -62,6 +63,7 @@ class KontsevichGraphSum(ModuleElement):
             1*(Kontsevich graph with 0 vertices on 0 ground vertices)
         """
         return self.parent()([(c*d,g) for (d,g) in self._terms])
+
     def _add_(self, other):
         """
         Return the sum of ``self`` and ``other``.
@@ -83,6 +85,7 @@ class KontsevichGraphSum(ModuleElement):
             1*(Kontsevich graph with 0 vertices on 0 ground vertices)
         """
         return self.parent()(self._terms + other._terms)
+
     def __eq__(self, other):
         """
         Compare ``self`` and ``other`` for equality.
@@ -106,11 +109,13 @@ class KontsevichGraphSum(ModuleElement):
         difference = self - other
         difference.reduce()
         return difference._terms == []
+
     def __hash__(self):
         """
         Return the hash value.
         """
         return hash(tuple(self._terms))
+
     def reduce(self):
         """
         Reduce the sum by collecting terms with proportional graphs.
@@ -171,6 +176,7 @@ class KontsevichGraphSum(ModuleElement):
         return ' + '.join('%s*(%s)' % (parenthesize(c), g)
                           for (c,g) in self._terms)
 
+
 class KontsevichGraphSums(Module):
     """
     The module of Kontsevich graph sums with coefficients in some ring.
@@ -186,6 +192,7 @@ class KontsevichGraphSums(Module):
             Module of Kontsevich graph sums over Symbolic Ring
         """
         return 'Module of Kontsevich graph sums over %s' % self.base_ring()
+
     def _element_constructor_(self, terms):
         """
         Make a KontsevichGraphSum in ``self`` from ``terms``.
@@ -196,6 +203,7 @@ class KontsevichGraphSums(Module):
         """
         if isinstance(terms, KontsevichGraphSum): terms = terms._terms
         return self.element_class(self, terms)
+
     def __cmp__(self, other):
         """
         Compare ``self`` and ``other`` for equality.
@@ -203,6 +211,7 @@ class KontsevichGraphSums(Module):
         if not isinstance(other, KontsevichGraphSums):
             return cmp(type(other), KontsevichGraphSums)
         return cmp(self.base_ring(), other.base_ring())
+
     def _an_element_(self):
         """
         EXAMPLES::
