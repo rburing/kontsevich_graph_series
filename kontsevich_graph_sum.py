@@ -87,7 +87,7 @@ class KontsevichGraphSum(ModuleElement):
         """
         Compare ``self`` and ``other`` for equality.
 
-        Currently tests for equality of coefficients of identical graphs.
+        Checks if the reduced difference is zero.
 
         INPUT:
 
@@ -103,9 +103,9 @@ class KontsevichGraphSum(ModuleElement):
             sage: A == B
             True
         """
-        self.reduce()
-        other.reduce()
-        return set(self._terms) == set(other._terms)
+        difference = self - other
+        difference.reduce()
+        return difference._terms == []
     def __hash__(self):
         """
         Return the hash value.
@@ -113,12 +113,44 @@ class KontsevichGraphSum(ModuleElement):
         return hash(tuple(self._terms))
     def reduce(self):
         """
-        Reduce the sum by collecting terms with the same graph.
+        Reduce the sum by collecting terms with proportional graphs.
+
+        Swapping the edge labels (L and R) of two edges originating from an
+        internal vertex introduces a minus sign. Hence graphs that differ only
+        in their edge labelings are related by a sign, equal to
+        (-1)^(the number of edge swaps).
+
+        ALGORITHM:
+
+        First collect terms with exactly the same graph. Call this the list
+        of old terms. For the first old term, find all the signed edge
+        relabelings of the graph in the old terms, and add up the signed
+        coefficients (+ or - according to the number of edge swaps).
+        If the result is nonzero, this gives a new term. In any case, remove
+        all the old terms involving these relabelings. Rinse, repeat.
         """
+        # Collect terms with exactly the same graph.
         graphs = set(g for (c,g) in self._terms)
         coefficient = lambda g: sum(c for (c,h) in self._terms if h == g)
         self._terms = [(coefficient(g), g) for g in graphs
                         if coefficient(g) != self.base_ring()(0)]
+
+        # Collect terms with the same graph up to sign.
+        old_terms = list(self._terms)
+        self._terms = []
+        while len(old_terms) > 0:
+            _, g = old_terms[0]
+            graphs = [h for (d,h) in old_terms]
+            signed_relabelings = filter(lambda (h, s): h in graphs, \
+                                        g.edge_relabelings(signs=True))
+            coefficient = lambda g: sum([d for (d,h) in old_terms \
+                                         if h == g])
+            total = sum(s*coefficient(h) for (h,s) in signed_relabelings)
+            if total != self.base_ring()(0):
+                self._terms.append((total, g))
+            for (h,s) in signed_relabelings:
+                old_terms.remove((coefficient(h), h))
+
     def _repr_(self):
         """
         EXAMPLES::
@@ -182,7 +214,7 @@ class KontsevichGraphSums(Module):
             ground vertices)
 
         """
-        KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F', 'G'}},
+        KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}},
                              ground_vertices=('F', 'G'),
                              immutable=True)
         return self.element_class(self, [(self.base_ring().an_element(), KG)])

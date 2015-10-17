@@ -153,6 +153,39 @@ class KontsevichGraph(DiGraph):
             yield KontsevichGraph(G, ground_vertices=self.ground_vertices(), \
                                   immutable=True)
 
+    def edge_labels_normalized(self):
+        """
+        Whether the edge labels are all equal to L or R.
+        """
+        return len(self.edges()) == 0 or \
+               set(l for (u,v,l) in self.edges()) == set(['L', 'R'])
+
+    def edge_relabelings(self, signs=False):
+        """
+        Yield all possible edge relabelings as Kontsevich graphs.
+        """
+        assert self.internal_vertices_normalized(), \
+               "Internal vertices should be normalized."
+        assert self.edge_labels_normalized(), \
+                "Edge labels should be normalized."
+
+        for swap in product([True,False], repeat=len(self.internal_vertices())):
+            KG = self.copy(immutable=False)
+            for v in KG.internal_vertices():
+                if swap[v-1]:
+                    targets = KG.neighbors_out(v)
+                    assert len(targets) == 2
+                    [t1,t2] = targets
+                    l1 = KG.edge_label(v, t1)
+                    l2 = KG.edge_label(v, t2)
+                    KG.set_edge_label(v, t1, l2)
+                    KG.set_edge_label(v, t2, l1)
+            KG = KG.copy(immutable=True)
+            if signs:
+                yield (KG, (-1)**(sum(1 if x else 0 for x in swap) % 2))
+            else:
+                yield KG
+
     def __eq__(self, other):
         """
         Compare self and other for equality.
