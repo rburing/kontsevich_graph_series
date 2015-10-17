@@ -1,0 +1,39 @@
+r"""
+Kontsevich graph sums
+
+"""
+from sage.kontsevich_graph_series.kontsevich_graph import KontsevichGraph
+from sage.structure.element import ModuleElement
+from sage.modules.module import Module
+
+class KontsevichGraphSum(ModuleElement):
+    def __init__(self, parent, terms):
+        """
+        Kontsevich graph sum.
+        """
+        if terms == 0:
+            terms = []
+        self._terms = terms
+        ModuleElement.__init__(self, parent=parent)
+    def _rmul_(self, c):
+        return self.parent()([(c*d,g) for (d,g) in self._terms])
+    def _add_(self, other):
+        return self.parent()(self._terms + other._terms)
+    def __cmp__(self, other):
+        return cmp(self._terms, other._terms)
+    def __hash__(self):
+        return hash(tuple(self._terms))
+    def _repr_(self):
+        return repr(self._terms)
+
+class KontsevichGraphSums(Module):
+    Element = KontsevichGraphSum
+    def _element_constructor_(self, terms):
+        if isinstance(terms, KontsevichGraphSum): terms = terms._terms
+        return self.element_class(self, terms)
+    def __cmp__(self, other):
+        if not isinstance(other, KontsevichGraphSums):
+            return cmp(type(other), KontsevichGraphSums)
+        return cmp(self.base_ring(), other.base_ring())
+    def _an_element_(self):
+        return self.element_class(self, [])
