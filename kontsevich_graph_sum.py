@@ -117,7 +117,8 @@ class KontsevichGraphSum(ModuleElement):
         """
         graphs = set(g for (c,g) in self._terms)
         coefficient = lambda g: sum(c for (c,h) in self._terms if h == g)
-        self._terms = [(coefficient(g), g) for g in graphs]
+        self._terms = [(coefficient(g), g) for g in graphs
+                        if coefficient(g) != self.base_ring()(0)]
     def _repr_(self):
         """
         EXAMPLES::
