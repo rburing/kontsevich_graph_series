@@ -75,7 +75,7 @@ class KontsevichGraph(DiGraph):
         """
         if not vs is None:
             if not isinstance(vs, tuple):
-                raise ValueError('Input must be a tuple of vertices.')
+                raise TypeError('Input must be a tuple of vertices.')
             if not all(v in self for v in vs):
                 raise ValueError('Input vertices must exist in the ' +
                                  'Kontsevich graph.')
