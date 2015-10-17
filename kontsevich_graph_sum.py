@@ -83,11 +83,11 @@ class KontsevichGraphSum(ModuleElement):
             1*(Kontsevich graph with 0 vertices on 0 ground vertices)
         """
         return self.parent()(self._terms + other._terms)
-    def __cmp__(self, other):
+    def __eq__(self, other):
         """
         Compare ``self`` and ``other`` for equality.
 
-        Currently tests for exact equality of the lists of terms.
+        Currently tests for equality of coefficients of identical graphs.
 
         INPUT:
 
@@ -101,9 +101,11 @@ class KontsevichGraphSum(ModuleElement):
                   KontsevichGraphSum(K, [(1/2, KG)])
             sage: B = KontsevichGraphSum(K, [(1, KG)])
             sage: A == B
-            False
+            True
         """
-        return cmp(self._terms, other._terms)
+        self.reduce()
+        other.reduce()
+        return set(self._terms) == set(other._terms)
     def __hash__(self):
         """
         Return the hash value.
