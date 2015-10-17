@@ -331,7 +331,7 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
                 if not internal_vertex in [v,w] and v != w:
                     yield (v,w)
         for L in product(*[possible_targets(v) for v in internal_vertices]):
-            G = copy(H)
+            G = H.copy()
             for v in internal_vertices:
                 l, r = L[v-1]
                 G.add_edge(v, l, 'L')
