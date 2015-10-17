@@ -32,6 +32,8 @@ class KontsevichGraph(DiGraph):
         """
         # Edge labels are important in equality testing:
         kwargs['weighted'] = True
+        # No multiple edges:
+        kwargs['multiedges'] = False
         copying = len(args) == 1 and isinstance(args[0], KontsevichGraph)
         if not copying and not 'ground_vertices' in kwargs:
             raise TypeError('KontsevichGraph() needs keyword argument ' +
