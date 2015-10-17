@@ -139,7 +139,9 @@ class KontsevichGraphSum(ModuleElement):
         all the old terms involving these relabelings. Rinse, repeat.
         """
         # Collect terms with exactly the same graph.
-        graphs = set(g for (c,g) in self._terms)
+        all_graphs = [g for (c,g) in self._terms]
+        graphs = list(set(all_graphs))
+        graphs.sort(key=all_graphs.index) # preserve ordering of terms
         coefficient = lambda g: sum(c for (c,h) in self._terms if h == g)
         self._terms = [(coefficient(g), g) for g in graphs
                         if coefficient(g) != self.base_ring()(0)]
