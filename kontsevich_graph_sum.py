@@ -147,7 +147,7 @@ class KontsevichGraphSum(ModuleElement):
                         if coefficient(g) != self.base_ring()(0)]
 
         # Remove terms with graphs which are zero.
-        self._terms = filter(lambda (c,g): g.is_zero(), self._terms)
+        self._terms = filter(lambda (c,g): not g.is_zero(), self._terms)
         # This is necessary for the next step, where we assume that all
         # edge relabelings are distinct.
 
