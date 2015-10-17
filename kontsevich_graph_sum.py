@@ -13,6 +13,14 @@ class KontsevichGraphSum(ModuleElement):
         """
         if terms == 0:
             terms = []
+        if not isinstance(terms, list):
+            raise TypeError('Input must be a list of terms.')
+        if not all(isinstance(t, tuple) and len(t) == 2 for t in terms):
+            raise TypeError('Terms must be (coefficient, graph) tuples.')
+        if not all(c in parent.base_ring() and isinstance(g, KontsevichGraph)
+                   for (c,g) in terms):
+            raise TypeError('Coefficients must be in base ring, and ' +
+                            'graphs must be KontsevichGraphs.')
         self._terms = terms
         ModuleElement.__init__(self, parent=parent)
     def _rmul_(self, c):
