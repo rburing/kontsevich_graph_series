@@ -183,13 +183,7 @@ class KontsevichGraph(DiGraph):
                 KG = self.copy(immutable=False)
                 for v in KG.internal_vertices():
                     if swap[v-1]:
-                        targets = KG.neighbors_out(v)
-                        assert len(targets) == 2
-                        [t1,t2] = targets
-                        l1 = KG.edge_label(v, t1)
-                        l2 = KG.edge_label(v, t2)
-                        KG.set_edge_label(v, t1, l2)
-                        KG.set_edge_label(v, t2, l1)
+                        KG.swap(v, inplace=True)
                 KG = KG.copy(immutable=True)
                 if signs:
                     yield (KG, (-1)**(sum(1 if x else 0 for x in swap) % 2))
@@ -220,6 +214,23 @@ class KontsevichGraph(DiGraph):
                                    reversed(self.ground_vertices()))))
         mirror.relabel(relabeling)
         return mirror.copy(immutable=True)
+
+    def swap(self, internal_vertex, inplace=False):
+        """
+        Swap labels of outgoing edges of ``internal_vertex``.
+        """
+        if not internal_vertex in self.internal_vertices():
+            raise ValueError, "internal_vertex should be an internal vertex."
+
+        KG = self if inplace else self.copy(immutable=False)
+        targets = KG.neighbors_out(internal_vertex)
+        assert len(targets) == 2
+        [t1,t2] = targets
+        l1 = KG.edge_label(internal_vertex, t1)
+        l2 = KG.edge_label(internal_vertex, t2)
+        KG.set_edge_label(internal_vertex, t1, l2)
+        KG.set_edge_label(internal_vertex, t2, l1)
+        return KG
 
     def __eq__(self, other):
         """
