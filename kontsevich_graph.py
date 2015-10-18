@@ -209,6 +209,18 @@ class KontsevichGraph(DiGraph):
                     return True
         return False
 
+    def mirror_image(self):
+        """
+        Return mirror image of self.
+        """
+        mirror = self.copy(immutable=False)
+        relabeling = dict(zip(self.internal_vertices(),
+                              self.internal_vertices()))
+        relabeling.update(dict(zip(self.ground_vertices(),
+                                   reversed(self.ground_vertices()))))
+        mirror.relabel(relabeling)
+        return mirror.copy(immutable=True)
+
     def __eq__(self, other):
         """
         Compare self and other for equality.
@@ -360,8 +372,8 @@ class KontsevichGraph(DiGraph):
                        for KG in self.internal_vertex_relabelings()))
 
 def kontsevich_graphs(n, m=2, cycles=True, unique=False,
-                      modulo_edge_labeling=False, only_primes=False,
-                      only_nonzero=False,
+                      modulo_edge_labeling=False, prime=None,
+                      zero=None, modulo_mirror_images=False,
                       positive_differential_order=False):
     """
     Generate KontsevichGraphs with ``n`` internal vertices and
@@ -377,10 +389,12 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
     - ``modulo_edge_labeling`` (boolean, default False): if True, yield only
       one representative of each class of graphs which are equal up to
       edge labeling.
-    - ``only_primes`` (boolean, default False): whether to yield only
-      prime graphs.
-    - ``only_nonzero`` (boolean, default False): whether to yield only
-      nonzero graphs.
+    - ``prime`` (boolean, default None): whether to yield prime graphs
+      or non-prime graphs (None is indifferent).
+    - ``zero`` (boolean, default None): whether to yield zero or nonzero
+      graphs (None is indifferent).
+    - ``modulo_mirror_images`` (boolean, default False): whether to yield
+      only one of each "pair" of mirror images.
     - ``positive_differential_order`` (boolean, default False): whether to
       yield only graphs whose ground vertices have in-degree > 0.
 
@@ -412,25 +426,40 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
 
     it = all_of_them()
 
+    # First filter according to properties independent of labeling
+    # (these are cheap to test)
     if not cycles:
         it = ifilter(lambda KG: KG.all_simple_cycles() == [], it)
 
-    if unique:
-        it = filter_unique(it)
+    if prime is not None:
+        it = ifilter(lambda KG: KG.is_prime() == prime, it)
 
-    if modulo_edge_labeling:
-        it = filter_unique(it, key = lambda KG: \
-                frozenset(DiGraph(KG1, weighted=False, immutable=True) \
-                          for KG1 in KG.internal_vertex_relabelings()))
-
-    if only_primes:
-        it = ifilter(lambda KG: KG.is_prime(), it)
-
-    if only_nonzero:
-        it = ifilter(lambda KG: not KG.is_zero(), it)
+    if zero is not None:
+        it = ifilter(lambda KG: KG.is_zero() == zero, it)
 
     if positive_differential_order:
         it = ifilter(lambda KG: all(KG.in_degree(v) > 0 \
                                     for v in KG.ground_vertices()), it)
+
+    # Then filter according to properties which depend on the labeling:
+    if modulo_mirror_images and not modulo_edge_labeling:
+        it = filter_unique(it, key = lambda KG: frozenset([KG,
+                                                           KG.mirror_image()]))
+
+    if modulo_edge_labeling and not modulo_mirror_images:
+        it = filter_unique(it, key = lambda KG: \
+                frozenset(DiGraph(KG1, weighted=False, immutable=True) \
+                          for KG1 in KG.internal_vertex_relabelings()))
+
+    if modulo_mirror_images and modulo_edge_labeling:
+        it = filter_unique(it, key = lambda KG: \
+                frozenset(frozenset([DiGraph(KG1, weighted=False, \
+                                             immutable=True), \
+                                     DiGraph(KG1.mirror_image(), \
+                                             weighted=False, immutable=True)]) \
+                          for KG1 in KG.internal_vertex_relabelings()))
+
+    if unique:
+        it = filter_unique(it)
 
     return it
