@@ -361,6 +361,7 @@ class KontsevichGraph(DiGraph):
 
 def kontsevich_graphs(n, m=2, cycles=True, unique=False,
                       modulo_edge_labeling=False, only_primes=False,
+                      only_nonzero=False,
                       positive_differential_order=False):
     """
     Generate KontsevichGraphs with ``n`` internal vertices and
@@ -378,6 +379,8 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
       edge labeling.
     - ``only_primes`` (boolean, default False): whether to yield only
       prime graphs.
+    - ``only_nonzero`` (boolean, default False): whether to yield only
+      nonzero graphs.
     - ``positive_differential_order`` (boolean, default False): whether to
       yield only graphs whose ground vertices have in-degree > 0.
 
@@ -422,6 +425,9 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
 
     if only_primes:
         it = ifilter(lambda KG: KG.is_prime(), it)
+
+    if only_nonzero:
+        it = ifilter(lambda KG: not KG.is_zero(), it)
 
     if positive_differential_order:
         it = ifilter(lambda KG: all(KG.in_degree(v) > 0 \
