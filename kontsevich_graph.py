@@ -404,6 +404,14 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
         True
         True
         True
+        sage: # how many graphs "look different":
+        sage: for n in range(1,4):
+        ....:     print len(list(kontsevich_graphs(n, \
+        ....:                                      modulo_edge_labeling=True, \
+        ....:                                      modulo_mirror_images=True)))
+        1
+        4
+        26
     """
     def all_of_them():
         ground_vertices = tuple(chr(70+k) for k in range(0,m))
