@@ -187,6 +187,30 @@ class KontsevichGraphSum(ModuleElement):
         return ' + '.join('%s*(%s)' % (parenthesize(c), g)
                           for (c,g) in self._terms)
 
+    def subs(self, *args):
+        """
+        Substitute the KontsevichGraphSums ``args`` in place of the ground
+        vertices, by multilinearity and the Leibniz rule.
+
+        Here, the Leibniz rule means summing over all possible attachments.
+        """
+        assert all(s in self.parent() for s in args)
+        assert all(len(g.ground_vertices()) == len(args) \
+                   for (c,g) in self._terms)
+        total_terms = []
+        for (c,g) in self._terms:
+            from itertools import product
+            for terms in product(*[s._terms for s in args]):
+                coeffs, graphs = zip(*terms)
+                import operator
+                coeff = c*reduce(operator.mul, coeffs)
+                # Attach in all the possible ways.
+                for attachment_points in product(*[h.vertices() \
+                                                   for h in graphs]):
+                    graph_attachments = zip(graphs, attachment_points)
+                    total_terms.append((coeff, g.attach(*graph_attachments)))
+        return self.parent()(total_terms)
+
 
 class KontsevichGraphSums(Module):
     """
