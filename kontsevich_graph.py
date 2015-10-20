@@ -116,13 +116,13 @@ class KontsevichGraph(DiGraph):
         return 'Kontsevich graph with %d vertices on %d ground vertices' % \
                (n, m)
         
-    def show(self, *args, **kwargs):
+    def plot(self, *args, **kwargs):
         """
         Show the Kontsevich graph.
         """
         if not 'edge_labels' in kwargs:
             kwargs['edge_labels'] = True        # show edge labels by default
-        return super(KontsevichGraph, self).show(*args, **kwargs)
+        return super(KontsevichGraph, self).plot(*args, **kwargs)
 
     def union(self, other):
         """
@@ -433,7 +433,8 @@ class KontsevichGraph(DiGraph):
             G = G.union(g)
         for n in range(0, len(self.ground_vertices())):
             for src in G.neighbors_in(old_ground[n]):
-                G.add_edge(src, attachment_points[n])
+                label = G.edge_label(src, old_ground[n])
+                G.add_edge(src, attachment_points[n], label)
             G.delete_vertex(old_ground[n])
         G.ground_vertices(new_ground)
         return G.copy(immutable=True)
