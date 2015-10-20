@@ -16,6 +16,13 @@ def filter_unique(it, key = lambda x : x):
             seen.add(k)
             yield el
 
+def partial_sums(iterable):
+    total = 0
+    yield total
+    for element in iterable:
+        total += element
+        yield total
+
 class KontsevichGraph(DiGraph):
     def __init__(self, *args, **kwargs):
         """
@@ -381,6 +388,56 @@ class KontsevichGraph(DiGraph):
         """
         return len(set(DiGraph(KG, weighted=True, immutable=True) \
                        for KG in self.internal_vertex_relabelings()))
+
+    def attach(self, *graph_attachments):
+        """
+        Attach graphs to the ground vertices at specified attachment points.
+
+        INPUT:
+
+        - ``graph_attachments`` -- a list of (graph, attachment point) pairs.
+          The length of the list should equal the number of ground vertices.
+          The graphs should all have distinct ground vertices.
+
+        OUTPUT:
+
+        The Kontsevich graph constructed by attaching the input graphs to the
+        ground vertices. The new ground vertices are the concatenation of the
+        input ground vertices.
+        """
+        graphs, points = zip(*graph_attachments)
+        assert len(graph_attachments) == len(self.ground_vertices())
+        assert all(g.internal_vertices_normalized() for g in graphs)
+        assert not set.intersection(*[set(g.ground_vertices()) for g in graphs])
+        import operator
+        new_ground = reduce(operator.add, [g.ground_vertices() for g in graphs])
+        # Compute the offsets at which the numbering of the attachments'
+        # internal vertices should start.
+        sizes = [len(g.internal_vertices()) for g in graphs]
+        offsets = [len(self.internal_vertices()) + p \
+                   for p in partial_sums(sizes)]
+        # Relabel attachments.
+        attachments = [graphs[n].relabel({v : v + offsets[n] \
+                        for v in graphs[n].internal_vertices()}, \
+                        inplace=False) \
+                       for n in range(0, len(self.ground_vertices()))]
+        # Compute new attachment points.
+        attachment_points = [points[n] + offsets[n] \
+                             if points[n] in graphs[n].internal_vertices() \
+                             else points[n] \
+                             for n in range(0, len(self.ground_vertices()))]
+        G = self.copy(immutable=False)
+        G.relabel({v : 'old %s' % v for v in G.ground_vertices()})
+        old_ground = G.ground_vertices()
+        for g in attachments:
+            G = G.union(g)
+        for n in range(0, len(self.ground_vertices())):
+            for src in G.neighbors_in(old_ground[n]):
+                G.add_edge(src, attachment_points[n])
+            G.delete_vertex(old_ground[n])
+        G.ground_vertices(new_ground)
+        return G.copy(immutable=True)
+
 
 def kontsevich_graphs(n, m=2, cycles=True, unique=False,
                       modulo_edge_labeling=False, prime=None,
