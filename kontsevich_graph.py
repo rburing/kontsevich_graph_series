@@ -116,9 +116,17 @@ class KontsevichGraph(DiGraph):
         return 'Kontsevich graph with %d vertices on %d ground vertices' % \
                (n, m)
         
-    def plot(self, *args, **kwargs):
+    def show(self, *args, **kwargs):
         """
         Show the Kontsevich graph.
+        """
+        if not 'edge_labels' in kwargs:
+            kwargs['edge_labels'] = True        # show edge labels by default
+        return super(KontsevichGraph, self).show(*args, **kwargs)
+
+    def plot(self, *args, **kwargs):
+        """
+        Plot the Kontsevich graph.
         """
         if not 'edge_labels' in kwargs:
             kwargs['edge_labels'] = True        # show edge labels by default
