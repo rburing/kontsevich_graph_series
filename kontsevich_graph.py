@@ -482,11 +482,17 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
         4
         26
     """
+
+    ground_vertices = tuple(chr(70+k) for k in range(0,m))
+    internal_vertices = range(1,n+1)
+    H = KontsevichGraph({v : {} for v in ground_vertices}, weighted=True,
+                        ground_vertices=ground_vertices, immutable=False)
+    H.add_vertices(internal_vertices)
+
+    if n == 0:
+        return iter([H.copy(immutable=True)])
+
     def all_of_them():
-        ground_vertices = tuple(chr(70+k) for k in range(0,m))
-        internal_vertices = range(1,n+1)
-        H = DiGraph({v : {} for v in ground_vertices}, weighted=True)
-        H.add_vertices(internal_vertices)
         def possible_targets(internal_vertex):
             for v,w in product(H.vertices(), repeat=2):
                 if not internal_vertex in [v,w] and v != w:
@@ -497,9 +503,7 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
                 l, r = L[v-1]
                 G.add_edge(v, l, 'L')
                 G.add_edge(v, r, 'R')
-            KG = KontsevichGraph(G, ground_vertices=ground_vertices, \
-                                 immutable=True)
-            yield KG
+            yield G.copy(immutable=True)
 
     it = all_of_them()
 
