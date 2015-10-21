@@ -114,6 +114,12 @@ class KontsevichGraphSum(ModuleElement):
         difference.reduce()
         return difference._terms == []
 
+    def __ne__(self, other):
+        """
+        Unequality testing by using :meth:`.__eq__`.
+        """
+        return not self.__eq__(other)
+
     def __hash__(self):
         """
         Return the hash value.
