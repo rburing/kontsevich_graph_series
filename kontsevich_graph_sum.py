@@ -211,8 +211,10 @@ class KontsevichGraphSum(ModuleElement):
                 import operator
                 coeff = c*reduce(operator.mul, coeffs)
                 # Attach in all the possible ways.
-                for attachment_points in product(*[h.vertices() \
-                                                   for h in graphs]):
+                for attachment_points in product(*[graphs[n].vertices() \
+                       if g.in_degree(g.ground_vertices()[n]) > 0 \
+                       else [graphs[n].random_vertex()] \
+                       for n in range(0, len(args))]):
                     graph_attachments = zip(graphs, attachment_points)
                     total_terms.append((coeff, g.attach(*graph_attachments)))
         return self.parent()(total_terms)
