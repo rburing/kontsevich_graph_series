@@ -440,18 +440,21 @@ class KontsevichGraph(DiGraph):
         return G.copy(immutable=True)
 
 
-def kontsevich_graphs(n, m=2, cycles=True, unique=False,
+def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
                       modulo_edge_labeling=False, prime=None,
                       zero=None, modulo_mirror_images=False,
                       positive_differential_order=False):
     """
-    Generate KontsevichGraphs with ``n`` internal vertices and
-    ``m`` ground vertices.
+    Generate KontsevichGraphs with ``n`` internal vertices labeled
+    1, ..., n, and ``m`` ground vertices labeled 'F', 'G', ...,
+    or labeled by ``ground_vertices`` if it's not ``None``.
 
     INPUT::
 
     - ``n`` (integer) -- number of internal vertices.
     - ``m`` (integer, default 2) -- number of ground vertices.
+    - ``ground_vertices`` (tuple, default None) -- ground vertices,
+      overrides ``m`` if not None.
     - ``cycles`` (boolean, default True): whether to yield graphs with cycles.
     - ``unique`` (boolean, default False): if True, yield no duplicate graphs
       (possible duplicates differ only in their internal vertex labeling).
@@ -483,7 +486,9 @@ def kontsevich_graphs(n, m=2, cycles=True, unique=False,
         26
     """
 
-    ground_vertices = tuple(chr(70+k) for k in range(0,m))
+    if not ground_vertices:
+        ground_vertices = tuple(chr(70+k) for k in range(0,m))
+
     internal_vertices = range(1,n+1)
     H = KontsevichGraph({v : {} for v in ground_vertices}, weighted=True,
                         ground_vertices=ground_vertices, immutable=False)
