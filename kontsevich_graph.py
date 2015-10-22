@@ -169,10 +169,13 @@ class KontsevichGraph(DiGraph):
         assert self.internal_vertices_normalized(), \
                "Internal vertices should be normalized."
 
-        for sigma in SymmetricGroup(self.internal_vertices()):
-            yield self.relabel(lambda v: sigma(v) \
-                                         if v in self.internal_vertices() \
-                                         else v, inplace=False)
+        def all_of_them():
+            for sigma in SymmetricGroup(self.internal_vertices()):
+                yield self.relabel(lambda v: sigma(v) \
+                                             if v in self.internal_vertices() \
+                                             else v, inplace=False)
+        return filter_unique(all_of_them(), key = lambda KG:
+                             DiGraph(KG, weighted=True, immutable=True))
 
     def edge_labels_normalized(self):
         """
@@ -259,7 +262,7 @@ class KontsevichGraph(DiGraph):
         if len(self.internal_vertices()) != len(other.internal_vertices()):
             return False
         for KG in other.internal_vertex_relabelings():
-            if DiGraph(self, weighted=True) == DiGraph(KG, weighted=True):
+            if DiGraph.__eq__(self, KG):
                 return True
         return False
 
@@ -387,13 +390,26 @@ class KontsevichGraph(DiGraph):
         floorless.delete_vertices(self.ground_vertices())
         return len(floorless.connected_components()) == 1
 
-    def multiplicity(self):
+    def internal_vertex_multiplicity(self):
         """
         The number of different DiGraphs (with different internal vertex
         labeling) that represent this KontsevichGraph.
         """
-        return len(set(DiGraph(KG, weighted=True, immutable=True) \
-                       for KG in self.internal_vertex_relabelings()))
+        return len(list(self.internal_vertex_relabelings()))
+
+    def edge_multiplicity(self):
+        """
+        The number of different Kontsevich graphs obtained by swapping
+        the edges coming out of internal vertices.
+        """
+        return len(list(self.edge_relabelings()))
+
+    def multiplicity(self):
+        """
+        The number of terms equal to w(self)*self when taking a sum over all
+        Kontsevich graphs.
+        """
+        return self.internal_vertex_multiplicity() * self.edge_multiplicity()
 
     def attach(self, *graph_attachments):
         """
