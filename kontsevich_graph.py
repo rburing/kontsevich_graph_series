@@ -170,11 +170,9 @@ class KontsevichGraph(DiGraph):
                "Internal vertices should be normalized."
 
         for sigma in SymmetricGroup(self.internal_vertices()):
-            G = DiGraph(self, weighted=True, immutable=False)
-            G.relabel(lambda v: sigma(v) if v in self.internal_vertices() \
-                                else v)
-            yield KontsevichGraph(G, ground_vertices=self.ground_vertices(), \
-                                  immutable=True)
+            yield self.relabel(lambda v: sigma(v) \
+                                         if v in self.internal_vertices() \
+                                         else v, inplace=False)
 
     def edge_labels_normalized(self):
         """
@@ -356,7 +354,7 @@ class KontsevichGraph(DiGraph):
         Delete ground vertices; the remaining connected components
         correspond to the prime factors.
         """
-        floorless = DiGraph(self, weighted=True, immutable=False)
+        floorless = self.copy(immutable=False)
         floorless.delete_vertices(self.ground_vertices())
         factors = []
         for C in floorless.connected_components():
@@ -385,7 +383,7 @@ class KontsevichGraph(DiGraph):
         Delete ground vertices; count connected components
         (which correspond to prime factors).
         """
-        floorless = DiGraph(self, immutable=False)
+        floorless = self.copy(immutable=False)
         floorless.delete_vertices(self.ground_vertices())
         return len(floorless.connected_components()) == 1
 
