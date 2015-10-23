@@ -407,9 +407,10 @@ class KontsevichGraph(DiGraph):
     def multiplicity(self):
         """
         The number of terms equal to w(self)*self when taking a sum over all
-        Kontsevich graphs.
+        Kontsevich graphs, sometimes double-counting equal edge relabelings.
         """
-        return self.internal_vertex_multiplicity() * self.edge_multiplicity()
+        return self.internal_vertex_multiplicity() * \
+               2**len(self.internal_vertices())
 
     def attach(self, *graph_attachments):
         """
