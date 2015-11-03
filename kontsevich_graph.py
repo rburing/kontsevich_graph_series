@@ -137,12 +137,11 @@ class KontsevichGraph(DiGraph):
         """
         Return the union of self and other.
         """
+        assert self.ground_vertices() == other.ground_vertices()
         G = super(KontsevichGraph, self).union(other)
         immutable = getattr(self, '_immutable', False) and \
                     getattr(other, '_immutable', False)
-        ground_vertices = tuple(set(self.ground_vertices()) | \
-                                set(other.ground_vertices()))
-        return KontsevichGraph(G, ground_vertices=ground_vertices, \
+        return KontsevichGraph(G, ground_vertices=self.ground_vertices(), \
                                immutable=immutable)
 
     def normalize_vertex_labels(self):
