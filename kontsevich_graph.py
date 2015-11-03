@@ -469,7 +469,7 @@ class KontsevichGraph(DiGraph):
 def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
                       modulo_edge_labeling=False, prime=None,
                       zero=None, modulo_mirror_images=False,
-                      positive_differential_order=False):
+                      positive_differential_order=None):
     """
     Generate KontsevichGraphs with ``n`` internal vertices labeled
     1, ..., n, and ``m`` ground vertices labeled 'F', 'G', ...,
@@ -493,8 +493,9 @@ def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
       graphs (None is indifferent).
     - ``modulo_mirror_images`` (boolean, default False): whether to yield
       only one of each "pair" of mirror images.
-    - ``positive_differential_order`` (boolean, default False): whether to
-      yield only graphs whose ground vertices have in-degree > 0.
+    - ``positive_differential_order`` (boolean, default None): whether to
+      yield only graphs whose ground vertices have in-degree > 0
+      (None is indifferent).
 
     EXAMPLES::
         sage: for n in range(1,4):
@@ -549,9 +550,13 @@ def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
     if zero is not None:
         it = ifilter(lambda KG: KG.is_zero() == zero, it)
 
-    if positive_differential_order:
-        it = ifilter(lambda KG: all(KG.in_degree(v) > 0 \
-                                    for v in KG.ground_vertices()), it)
+    if positive_differential_order is not None:
+        if positive_differential_order:
+            it = ifilter(lambda KG: all(KG.in_degree(v) > 0 \
+                                        for v in KG.ground_vertices()), it)
+        else:
+            it = ifilter(lambda KG: 0 in [KG.in_degree(v) \
+                                          for v in KG.ground_vertices()], it)
 
     # Then filter according to properties which depend on the labeling:
     if modulo_mirror_images and not modulo_edge_labeling:
