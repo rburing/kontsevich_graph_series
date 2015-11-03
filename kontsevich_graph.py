@@ -101,7 +101,8 @@ class KontsevichGraph(DiGraph):
                                  'out-degree zero.')
             self.set_vertices({v : None for v in self})
             self.set_vertices({v : n for (v,n) in zip(vs, range(0,len(vs)))})
-        return tuple(k for (k,v) in sorted(self.get_vertices().items()) \
+        return tuple(k for (k,v) in sorted(self.get_vertices().items(), \
+                                           key = lambda (v,k) : k) \
                      if not v is None)
     
     def internal_vertices(self):
