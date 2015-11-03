@@ -434,6 +434,7 @@ class KontsevichGraph(DiGraph):
         graphs, attachments = zip(*graph_attachments)
         assert len(graph_attachments) == len(self.ground_vertices())
         assert all(g.internal_vertices_normalized() for g in graphs)
+        assert all(isinstance(a, dict) for a in attachments)
         assert not set.intersection(*[set(g.ground_vertices()) for g in graphs])
         import operator
         new_ground = reduce(operator.add, [g.ground_vertices() for g in graphs])
@@ -457,14 +458,13 @@ class KontsevichGraph(DiGraph):
         G.relabel({v : 'old %s' % v for v in G.ground_vertices()})
         old_ground = G.ground_vertices()
         for g in attachment_graphs:
-            G = G.union(g)
+            G = DiGraph.union(G,g)
         for n in range(0, len(self.ground_vertices())):
             for src in G.neighbors_in(old_ground[n]):
                 label = G.edge_label(src, old_ground[n])
                 G.add_edge(src, attachment_points[n][src], label)
             G.delete_vertex(old_ground[n])
-        G.ground_vertices(new_ground)
-        return G.copy(immutable=True)
+        return KontsevichGraph(G, ground_vertices=new_ground, immutable=True)
 
 
 def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
