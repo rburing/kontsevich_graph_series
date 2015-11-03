@@ -223,12 +223,14 @@ class KontsevichGraph(DiGraph):
         """
         Return mirror image of self.
         """
+        old_ground = self.ground_vertices()
         mirror = self.copy(immutable=False)
         relabeling = dict(zip(self.internal_vertices(),
                               self.internal_vertices()))
         relabeling.update(dict(zip(self.ground_vertices(),
                                    reversed(self.ground_vertices()))))
         mirror.relabel(relabeling)
+        mirror.ground_vertices(old_ground)
         return mirror.copy(immutable=True)
 
     def swap(self, internal_vertex, inplace=False):
