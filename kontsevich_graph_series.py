@@ -47,10 +47,6 @@ class KontsevichGraphSeries(AlgebraElement):
         """
         Common precision of the two series (the minimum of the two).
         """
-        if self.prec() is infinity:
-            return other.prec()
-        elif other.prec() is infinity:
-            return other.prec()
         return min(self.prec(), other.prec())
 
     def __getitem__(self, n):
