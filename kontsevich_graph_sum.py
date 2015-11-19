@@ -126,6 +126,26 @@ class KontsevichGraphSum(ModuleElement):
         """
         return hash(tuple(self._terms))
 
+    def coefficient(self, g):
+        """
+        The coefficient of the graph ``g`` in the sum, also counting
+        signed relabelings.
+        """
+        graphs = [h for (d,h) in self._terms]
+        signed_relabelings = filter(lambda (h, s): h in graphs, \
+                                    g.edge_relabelings(signs=True))
+        coefficient = lambda g: sum([d for (d,h) in self._terms \
+                                     if h == g])
+        total = sum(s*coefficient(h) for (h,s) in signed_relabelings)
+        return total
+
+    def coefficients(self, gs):
+        """
+        The coefficients of the graphs ``gs`` in the sum, also counting
+        signed relabelings.
+        """
+        return [self.coefficient(g) for g in gs]
+
     def reduce(self):
         """
         Reduce the sum by collecting terms with proportional graphs.
