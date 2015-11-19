@@ -126,6 +126,12 @@ class KontsevichGraphSum(ModuleElement):
         """
         return hash(tuple(self._terms))
 
+    def __iter__(self):
+        """
+        Iterator over the (coefficient, graph) terms in the sum.
+        """
+        return iter(self._terms)
+
     def coefficient(self, g):
         """
         The coefficient of the graph ``g`` in the sum, also counting
