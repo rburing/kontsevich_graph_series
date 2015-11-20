@@ -232,8 +232,8 @@ class KontsevichGraphSeries(AlgebraElement):
                             ground_vertices=tuple(ground_vertices[n]),
                             immutable=True))])},
             prec=self.prec())
-        return gauge.subs(self.subs(inverse.subs(ground(0)),
-                                    inverse.subs(ground(1))))
+        return inverse.subs(self.subs(gauge.subs(ground(0)),
+                                      gauge.subs(ground(1))))
 
 class KontsevichGraphSeriesRng(Algebra, Nonexact):
     Element = KontsevichGraphSeries
