@@ -2,6 +2,7 @@ r"""
 Kontsevich graph series
 
 """
+from sage.kontsevich_graph_series.kontsevich_graph import KontsevichGraph
 from sage.kontsevich_graph_series.kontsevich_graph_sum import KontsevichGraphSum
 from sage.structure.element import AlgebraElement
 from sage.categories.associative_algebras import AssociativeAlgebras
@@ -205,6 +206,34 @@ class KontsevichGraphSeries(AlgebraElement):
                                                     enumerate(x)))
         return self.parent()(subs_terms, prec=prec)
 
+    def inverse(self):
+        """
+        The formal power series inverse of this series.
+
+        Only support one ground vertex, for now.
+        """
+        inverse_terms = {0 : self[0]}
+        for n in range(1, self.prec() + 1):
+            inverse_terms[n] = 0
+            for k in range(0,n):
+                inverse_terms[n] -= inverse_terms[k].subs(self[n-k])
+        return self.parent()(inverse_terms, prec=self.prec())
+
+    def gauge_transform(self, gauge):
+        """
+        Return the gauge-transformed series.
+
+        Only support two ground vertices, for now.
+        """
+        inverse = gauge.inverse()
+        ground_vertices = list(self[0])[0][1].ground_vertices()
+        ground = lambda n: self.parent()({0 : self.parent().base_module()([(1,
+            KontsevichGraph({ground_vertices[n] : {}},
+                            ground_vertices=tuple(ground_vertices[n]),
+                            immutable=True))])},
+            prec=self.prec())
+        return gauge.subs(self.subs(inverse.subs(ground(0)),
+                                    inverse.subs(ground(1))))
 
 class KontsevichGraphSeriesRng(Algebra, Nonexact):
     Element = KontsevichGraphSeries
