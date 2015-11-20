@@ -173,18 +173,26 @@ class KontsevichGraphSeries(AlgebraElement):
         """
         Star product.
         """
-        prec = self.common_prec(other)
+        return self.parent()._star_product_series.subs(self, other)
+
+    def subs(self, *args):
+        """
+        Substitute series into the ground vertices of this series.
+
+        Only support two ground vertices, for now.
+        """
+        assert len(args) == 2
+        prec = min(series.prec() for series in args)
         N = self.parent().default_prec()
-        product_terms = {}
+        subs_terms = {}
         for n in range(0, min(N, prec) + 1):
-            product_terms[n] = 0
+            subs_terms[n] = 0
             for k in range(0, n + 1):
                 for a in range(0, n - k + 1):
                     b = n - k - a
-                    product_terms[n] += \
-                            self.parent()._star_product_series[k].subs( \
-                            self[a], other[b])
-        return self.parent()(product_terms, prec=prec)
+                    subs_terms[n] += self[k].subs(args[0][a], args[1][b])
+        return self.parent()(subs_terms, prec=prec)
+
 
 class KontsevichGraphSeriesRng(Algebra, Nonexact):
     Element = KontsevichGraphSeries
