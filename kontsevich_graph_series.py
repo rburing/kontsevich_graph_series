@@ -9,6 +9,19 @@ from sage.rings.ring import Algebra
 from sage.structure.parent import Parent
 from sage.structure.nonexact import Nonexact
 from sage.rings.infinity import infinity
+from sage.combinat.permutation import Permutations
+
+def fixed_length_partitions(n,k,l=1):
+    '''n is the integer to partition, k is the length of partitions, l is the min partition element size'''
+    if k < 1:
+        raise StopIteration
+    if k == 1:
+        if n >= l:
+            yield (n,)
+        raise StopIteration
+    for i in range(l,n+1):
+        for result in fixed_length_partitions(n-i,k-1,i):
+            yield (i,)+result
 
 class KontsevichGraphSeries(AlgebraElement):
     def __init__(self, parent, terms, prec=infinity):
@@ -178,20 +191,20 @@ class KontsevichGraphSeries(AlgebraElement):
     def subs(self, *args):
         """
         Substitute series into the ground vertices of this series.
-
-        Only support two ground vertices, for now.
         """
-        assert len(args) == 2
         prec = min(series.prec() for series in args)
         N = self.parent().default_prec()
         subs_terms = {}
         for n in range(0, min(N, prec) + 1):
             subs_terms[n] = 0
-            for k in range(0, n + 1):
-                for a in range(0, n - k + 1):
-                    b = n - k - a
-                    subs_terms[n] += self[k].subs(args[0][a], args[1][b])
+            for y in fixed_length_partitions(n, len(args) + 1, 0):
+                for x in Permutations(y):
+                    k = x[0]
+                    x = x[1:]
+                    subs_terms[n] += self[k].subs(*(args[l][t] for (l,t) in \
+                                                    enumerate(x)))
         return self.parent()(subs_terms, prec=prec)
+
 
 class KontsevichGraphSeriesRng(Algebra, Nonexact):
     Element = KontsevichGraphSeries

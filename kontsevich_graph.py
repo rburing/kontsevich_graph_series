@@ -435,7 +435,8 @@ class KontsevichGraph(DiGraph):
         assert len(graph_attachments) == len(self.ground_vertices())
         assert all(g.internal_vertices_normalized() for g in graphs)
         assert all(isinstance(a, dict) for a in attachments)
-        assert not set.intersection(*[set(g.ground_vertices()) for g in graphs])
+        assert len(graphs) == 1 or \
+            not set.intersection(*[set(g.ground_vertices()) for g in graphs])
         import operator
         new_ground = reduce(operator.add, [g.ground_vertices() for g in graphs])
         # Compute the offsets at which the numbering of the attachments'
