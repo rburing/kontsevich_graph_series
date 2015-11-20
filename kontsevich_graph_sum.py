@@ -257,6 +257,39 @@ class KontsevichGraphSum(ModuleElement):
                     total_terms.append((coeff, g.attach(*graph_attachments)))
         return self.parent()(total_terms)
 
+    def __mul__(self, other):
+        """
+        Pointwise product.
+
+        For technical reasons, ground vertices should be distinct.
+        """
+        prod_terms = []
+        for (c,g) in self._terms:
+            for (d,h) in other._terms:
+                prod_terms.append((c*d, g.union(h, same_ground=False)))
+        return self.parent()(prod_terms)
+
+    def hochschild_differential(self):
+        """
+        The Hochschild differential.
+        """
+        diff = self.parent()(0)
+        for (c,g) in self._terms:
+            k = len(g.ground_vertices()) - 1
+            ground = tuple(chr(70+l) for l in range(0, k + 2))
+            graphs = [KontsevichGraph({v : {}}, ground_vertices=tuple(v),
+                                      immutable=True) for v in ground]
+            arguments = [self.parent()([(1, h)]) for h in graphs]
+            print [x._terms[0][1].ground_vertices() for x in arguments]
+            diff += arguments[0]*self.subs(*(arguments[1:]))
+            for i in range(0, k + 1):
+                new_arguments = arguments[0:i]
+                new_arguments += [arguments[i]*arguments[i+1]]
+                new_arguments += arguments[i+2:] if i+2 <= k+1 else []
+                print [x._terms[0][1].ground_vertices() for x in new_arguments]
+                diff += (-(-1)**i)*self.subs(*new_arguments)
+            diff += (-1)**k * self.subs(*(arguments[0:-1])) * arguments[-1]
+        return diff
 
 class KontsevichGraphSums(Module):
     """

@@ -133,15 +133,19 @@ class KontsevichGraph(DiGraph):
             kwargs['edge_labels'] = True        # show edge labels by default
         return super(KontsevichGraph, self).plot(*args, **kwargs)
 
-    def union(self, other):
+    def union(self, other, same_ground=True):
         """
         Return the union of self and other.
         """
-        assert self.ground_vertices() == other.ground_vertices()
+        if same_ground:
+            assert self.ground_vertices() == other.ground_vertices()
+            new_ground = self.ground_vertices()
+        else:
+            new_ground = self.ground_vertices() + other.ground_vertices()
         G = super(KontsevichGraph, self).union(other)
         immutable = getattr(self, '_immutable', False) and \
                     getattr(other, '_immutable', False)
-        return KontsevichGraph(G, ground_vertices=self.ground_vertices(), \
+        return KontsevichGraph(G, ground_vertices=new_ground, \
                                immutable=immutable)
 
     def normalize_vertex_labels(self):
