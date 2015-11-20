@@ -193,7 +193,6 @@ class KontsevichGraphSeries(AlgebraElement):
                     subs_terms[n] += self[k].subs(args[0][a], args[1][b])
         return self.parent()(subs_terms, prec=prec)
 
-
 class KontsevichGraphSeriesRng(Algebra, Nonexact):
     Element = KontsevichGraphSeries
 
@@ -222,6 +221,9 @@ class KontsevichGraphSeriesRng(Algebra, Nonexact):
         self._star_product_series = {}
         self._star_product_series = self.element_class(self, star_product_terms,
                                                prec=default_prec)
+
+    def base_module(self):
+        return self._base_module
 
     def _repr_(self):
         """
