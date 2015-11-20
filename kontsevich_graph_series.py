@@ -267,6 +267,9 @@ class KontsevichGraphSeriesRng(Algebra, Nonexact):
     def base_module(self):
         return self._base_module
 
+    def star_product_series(self):
+        return self._star_product_series
+
     def _repr_(self):
         """
         Representation of the rng as a string.
