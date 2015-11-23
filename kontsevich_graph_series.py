@@ -282,11 +282,15 @@ class KontsevichGraphSeriesRng(Algebra, Nonexact):
         """
         Make a KontsevichGraphSeries in ``self`` from ``terms``.
         """
-        if prec is None:
-            prec = self.default_prec()
+        if isinstance(terms, KontsevichGraph):
+            terms = {0 : [(1, terms)]}
+        if isinstance(terms, KontsevichGraphSum):
+            terms = {0 : terms}
         if isinstance(terms, KontsevichGraphSeries):
             terms = terms._terms
             prec = terms._prec
+        if prec is None:
+            prec = self.default_prec()
         return self.element_class(self, terms, prec=prec)
 
     # The following three methods make the generator notation

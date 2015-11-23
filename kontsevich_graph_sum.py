@@ -315,7 +315,10 @@ class KontsevichGraphSums(Module):
 
         - ``terms`` -- KontsevichGraphSum, list of terms, or 0.
         """
-        if isinstance(terms, KontsevichGraphSum): terms = terms._terms
+        if isinstance(terms, KontsevichGraph):
+            terms = [(1, terms)]
+        if isinstance(terms, KontsevichGraphSum):
+            terms = terms._terms
         return self.element_class(self, terms)
 
     def __cmp__(self, other):
