@@ -32,6 +32,8 @@ class KontsevichGraph(DiGraph):
 
          - All the usual arguments to DiGraph.
          - ``ground_vertices`` -- a tuple of vertices to be ground vertices
+         - Shorthand: a tuple of strings as the only argument, to produce the
+           Kontsevich graph with just those ground vertices.
 
         OUTPUT:
 
@@ -41,6 +43,10 @@ class KontsevichGraph(DiGraph):
 
             sage: KontsevichGraph(ground_vertices=())
             Kontsevich graph with 0 vertices on 0 ground vertices
+            sage: KontsevichGraph(('F',))
+            Kontsevich graph with 0 vertices on 1 ground vertices
+            sage: KontsevichGraph(('F','G'))
+            Kontsevich graph with 0 vertices on 2 ground vertices
             sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
             ....:                  'G' : 'R'}}, ground_vertices=('F', 'G'))
             Kontsevich graph with 1 vertices on 2 ground vertices
@@ -49,11 +55,20 @@ class KontsevichGraph(DiGraph):
         kwargs['weighted'] = True
         # No multiple edges:
         kwargs['multiedges'] = False
+
+        shorthand = len(args) == 1 and isinstance(args[0], tuple) and \
+                    all(isinstance(v, str) for v in args[0])
+        if shorthand:
+            ground_vertices = args[0]
+            args = [{v : {} for v in ground_vertices}]
+            kwargs['ground_vertices'] = ground_vertices
+
         copying = len(args) == 1 and isinstance(args[0], KontsevichGraph)
         if not copying and not 'ground_vertices' in kwargs:
             raise TypeError('KontsevichGraph() needs keyword argument ' +
                     'ground_vertices, or an existing KontsevichGraph ' +
-                    'as the first argument.')
+                    'as the first argument, or a tuple of ground vertices' +
+                    'as the first argument')
         if 'ground_vertices' in kwargs:
             ground_vertices = kwargs['ground_vertices']
             del kwargs['ground_vertices']
@@ -84,6 +99,8 @@ class KontsevichGraph(DiGraph):
             ('F', 'G')
             sage: KG.ground_vertices(('F',))
             ('F',)
+            sage: KG = KontsevichGraph(('F','G','H')); KG.ground_vertices()
+            ('F', 'G', 'H')
 
         .. NOTE::
             
