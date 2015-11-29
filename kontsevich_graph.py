@@ -415,10 +415,11 @@ class KontsevichGraph(DiGraph):
 
     def internal_vertex_multiplicity(self):
         """
-        The number of different DiGraphs (with different internal vertex
-        labeling) that represent this KontsevichGraph.
+        The number of different unlabeled DiGraphs (with different internal
+        vertex labeling) that represent this KontsevichGraph.
         """
-        return len(list(self.internal_vertex_relabelings()))
+        return len(set([DiGraph(g, weighted=False, immutable=True)
+                        for g in self.internal_vertex_relabelings()]))
 
     def edge_multiplicity(self):
         """
@@ -431,6 +432,13 @@ class KontsevichGraph(DiGraph):
         """
         The number of terms equal to w(self)*self when taking a sum over all
         Kontsevich graphs, sometimes double-counting equal edge relabelings.
+
+        EXAMPLES::
+
+            sage: n = 2
+            sage: sum(g.multiplicity() for g in kontsevich_graphs(n, \
+            ....:     modulo_edge_labeling=True)) == (n*(n+1))^n
+            True
         """
         return self.internal_vertex_multiplicity() * \
                2**len(self.internal_vertices())
