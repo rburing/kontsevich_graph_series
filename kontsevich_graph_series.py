@@ -223,17 +223,18 @@ class KontsevichGraphSeries(AlgebraElement):
         """
         Return the gauge-transformed series.
 
-        Only support two ground vertices, for now.
+        Only support series with two ground vertices, i.e. star product series.
         """
         inverse = gauge.inverse()
         ground_vertices = list(self[0])[0][1].ground_vertices()
-        ground = lambda n: self.parent()({0 : self.parent().base_module()([(1,
-            KontsevichGraph({ground_vertices[n] : {}},
-                            ground_vertices=tuple(ground_vertices[n]),
+        assert len(ground_vertices) == 2
+        ground_graph = lambda v: self.parent()({0 : self.parent().base_module()([(1,
+            KontsevichGraph({v : {}},
+                            ground_vertices=tuple(v),
                             immutable=True))])},
             prec=self.prec())
-        return inverse.subs(self.subs(gauge.subs(ground(0)),
-                                      gauge.subs(ground(1))))
+        return inverse.subs(self.subs(*[gauge.subs(ground_graph(v))
+                                        for v in ground_vertices]))
 
 class KontsevichGraphSeriesRng(Algebra, Nonexact):
     Element = KontsevichGraphSeries
