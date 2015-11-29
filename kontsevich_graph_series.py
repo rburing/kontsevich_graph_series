@@ -284,7 +284,7 @@ class KontsevichGraphSeriesRng(Algebra, Nonexact):
         Make a KontsevichGraphSeries in ``self`` from ``terms``.
         """
         if isinstance(terms, KontsevichGraph):
-            terms = {0 : [(1, terms)]}
+            terms = {0 : self.base_module()([(1, terms)])}
         if isinstance(terms, KontsevichGraphSum):
             terms = {0 : terms}
         if isinstance(terms, KontsevichGraphSeries):
