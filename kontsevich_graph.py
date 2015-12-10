@@ -496,6 +496,20 @@ class KontsevichGraph(DiGraph):
             G.delete_vertex(old_ground[n])
         return KontsevichGraph(G, ground_vertices=new_ground, immutable=True)
 
+    def add_wedge(self, left, right):
+        """
+        Add a wedge with targets ``left`` and ``right``.
+
+        EXAMPLES::
+
+            sage: KontsevichGraph(('F','G')).add_wedge('F','G')
+            Kontsevich graph with 1 vertices on 2 ground vertices
+        """
+        n = len(self.internal_vertices())
+        wedge = DiGraph([(n + 1, left, 'L'), (n + 1, right, 'R')])
+        return KontsevichGraph(DiGraph.union(self, wedge), immutable=True,
+                               ground_vertices=self.ground_vertices())
+
 
 def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
                       modulo_edge_labeling=False, prime=None,

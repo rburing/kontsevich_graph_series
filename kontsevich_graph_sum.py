@@ -291,6 +291,20 @@ class KontsevichGraphSum(ModuleElement):
             diff += (-1)**k * self.subs(*(arguments[0:-1])) * arguments[-1]
         return diff
 
+    def self_action(self, target):
+        """
+        Action of a wedge with one leg on a fixed target and the other on
+        the whole graph.
+        """
+        self_action_terms = []
+        for (c,g) in self:
+            n = len(g.internal_vertices())
+            for v in g:
+                if v == target:
+                    continue                      # skip tadpole (zero) graphs
+                self_action_terms.append((c, g.add_wedge(target, v)))
+        return self.parent()(self_action_terms)
+
 class KontsevichGraphSums(Module):
     """
     The module of Kontsevich graph sums with coefficients in some ring.
