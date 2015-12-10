@@ -301,7 +301,7 @@ class KontsevichGraphSum(ModuleElement):
             n = len(g.internal_vertices())
             for v in g:
                 if v == target:
-                    continue                      # skip tadpole (zero) graphs
+                    continue                      # skip multiple edges (zero) graphs
                 self_action_terms.append((c, g.add_wedge(target, v)))
         return self.parent()(self_action_terms)
 
@@ -363,13 +363,6 @@ class KontsevichGraphSums(Module):
         """
         Return the Jacobiator with ground vertices ``f``, ``g``, ``h``
         in ``self``.
-
-        EXAMPLES::
-
-            sage: KontsevichGraphSums(QQ).jacobiator('F', 'G', 'H')
-            1*(Kontsevich graph with 2 vertices on 3 ground vertices) + \
-            1*(Kontesvich graph with 2 vertices on 3 ground vertices) + \
-            1*(Kontsevich grpah with 2 vertices on 3 ground vertices)
         """
         Jacobi = KontsevichGraph([(1, f, 'L'), (1, g, 'R'), (2, 1, 'L'),
                                   (2, h, 'R')], ground_vertices=(f, g, h),
