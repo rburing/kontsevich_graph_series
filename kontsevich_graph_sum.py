@@ -358,3 +358,27 @@ class KontsevichGraphSums(Module):
                              ground_vertices=('F', 'G'),
                              immutable=True)
         return self.element_class(self, [(self.base_ring().an_element(), KG)])
+
+    def jacobiator(self, f, g, h):
+        """
+        Return the Jacobiator with ground vertices ``f``, ``g``, ``h``
+        in ``self``.
+
+        EXAMPLES::
+
+            sage: KontsevichGraphSums(QQ).jacobiator('F', 'G', 'H')
+            1*(Kontsevich graph with 2 vertices on 3 ground vertices) + \
+            1*(Kontesvich graph with 2 vertices on 3 ground vertices) + \
+            1*(Kontsevich grpah with 2 vertices on 3 ground vertices)
+        """
+        Jacobi = KontsevichGraph([(1, f, 'L'), (1, g, 'R'), (2, 1, 'L'),
+                                  (2, h, 'R')], ground_vertices=(f, g, h),
+                                  immutable=True)
+        terms = []
+        for cyclic_permutation in ((f,g,h), (g,h,f), (h,f,g)):
+            graph = Jacobi.relabel({f : cyclic_permutation[0],
+                                    g : cyclic_permutation[1],
+                                    h : cyclic_permutation[2]}, inplace=False)
+            graph.ground_vertices((f, g, h))
+            terms.append((self.base_ring()(1), graph))
+        return self.element_class(self, terms)
