@@ -67,7 +67,7 @@ class KontsevichGraph(DiGraph):
         if not copying and not 'ground_vertices' in kwargs:
             raise TypeError('KontsevichGraph() needs keyword argument ' +
                     'ground_vertices, or an existing KontsevichGraph ' +
-                    'as the first argument, or a tuple of ground vertices' +
+                    'as the first argument, or a tuple of ground vertices ' +
                     'as the first argument')
         if 'ground_vertices' in kwargs:
             ground_vertices = kwargs['ground_vertices']
