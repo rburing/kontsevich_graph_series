@@ -23,6 +23,49 @@ def partial_sums(iterable):
         total += element
         yield total
 
+def kontsevich_graph_from_latex(operator):
+    """
+    Build Kontsevich graph from multi-differential operator as a LaTeX string.
+    """
+    tokens = operator.split(' ')
+    edges = []
+    ground_vertices = []
+    internal_vertices = []
+    for t in tokens:
+        if len(t) == 10 and t[0:8] == '\\partial':
+            source = None
+            for v in internal_vertices:
+                if t[9] in v:
+                    source = v
+            edges.append((source, None, t[9]))
+        elif len(t) == 11 and t[0:6] == '\\alpha':
+            target = t[8:10]
+            internal_vertices.append(target)
+            for k in range(0, len(edges)):
+                (s,t,l) = edges[k]
+                if t == None:
+                    t = target
+                if l in target:
+                    s = target
+                edges[k] = (s,t,l)
+        else:
+            target = t
+            ground_vertices.append(t)
+            for k in range(0, len(edges)):
+                (s,t,l) = edges[k]
+                if t == None:
+                    t = target
+                edges[k] = (s,t,l)
+    # relabeling
+    relabeling = dict(zip(internal_vertices, range(1, len(internal_vertices)+1)))
+    for k in range(0, len(edges)):
+        (s,t,l) = edges[k]
+        l = 'L' if l == s[0] else 'R'
+        s = relabeling[s]
+        t = relabeling[t] if t in relabeling else t
+        edges[k] = (s,t,l)
+    return edges, tuple(ground_vertices)
+
 class KontsevichGraph(DiGraph):
     def __init__(self, *args, **kwargs):
         """
@@ -32,8 +75,11 @@ class KontsevichGraph(DiGraph):
 
          - All the usual arguments to DiGraph.
          - ``ground_vertices`` -- a tuple of vertices to be ground vertices
+
          - Shorthand: a tuple of strings as the only argument, to produce the
            Kontsevich graph with just those ground vertices.
+         - LaTeX: a LaTeX string as the only argument, to convert an expression
+           for an appropriate multi-differential operator into a Kontsevich graph.
 
         OUTPUT:
 
@@ -50,11 +96,19 @@ class KontsevichGraph(DiGraph):
             sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
             ....:                  'G' : 'R'}}, ground_vertices=('F', 'G'))
             Kontsevich graph with 1 vertices on 2 ground vertices
+            sage: KontsevichGraph('\\alpha^{ab} \\partial_a F \\partial_b G')
+            Kontsevich graph with 1 vertices on 2 ground vertices
         """
         # Edge labels are important in equality testing:
         kwargs['weighted'] = True
         # No multiple edges:
         kwargs['multiedges'] = False
+
+        latex = len(args) == 1 and isinstance(args[0], str)
+        if latex:
+            edges, ground_vertices = kontsevich_graph_from_latex(args[0])
+            args = [edges]
+            kwargs['ground_vertices'] = ground_vertices
 
         shorthand = len(args) == 1 and isinstance(args[0], tuple) and \
                     all(isinstance(v, str) for v in args[0])
@@ -68,7 +122,8 @@ class KontsevichGraph(DiGraph):
             raise TypeError('KontsevichGraph() needs keyword argument ' +
                     'ground_vertices, or an existing KontsevichGraph ' +
                     'as the first argument, or a tuple of ground vertices ' +
-                    'as the first argument')
+                    'as the first argument, or a LaTeX string as the first ' +
+                    'argument')
         if 'ground_vertices' in kwargs:
             ground_vertices = kwargs['ground_vertices']
             del kwargs['ground_vertices']
@@ -532,14 +587,15 @@ class KontsevichGraph(DiGraph):
         """
         index = {e : chr(97+k) for (k,e) in enumerate(self.edges())}
         partials = {v : ' '.join('\\partial_%s' % index[e]
-                                 for e in self.incoming_edges(v))
+                                 for e in self.incoming_edges(v)) + ' '
+                        if self.in_degree(v) > 0 else ''
                     for v in self}
         bivector = {v : '\\alpha^{%s%s}' % tuple(index[e]
                                              for e in self.outgoing_edges(v))
                     for v in self.internal_vertices()}
-        return ' '.join('%s %s' % (partials[v], bivector[v])
+        return ' '.join('%s%s' % (partials[v], bivector[v])
                         for v in self.internal_vertices()) + ' ' + \
-               ' '.join('%s %s' % (partials[v], v)
+               ' '.join('%s%s' % (partials[v], v)
                         for v in self.ground_vertices())
 
 
