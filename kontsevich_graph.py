@@ -134,21 +134,35 @@ class KontsevichGraph(DiGraph):
         return 'Kontsevich graph with %d vertices on %d ground vertices' % \
                (n, m)
         
-    def show(self, *args, **kwargs):
+    def show(self, **kwargs):
         """
         Show the Kontsevich graph.
         """
-        if not 'edge_labels' in kwargs:
-            kwargs['edge_labels'] = True        # show edge labels by default
-        return super(KontsevichGraph, self).show(*args, **kwargs)
+        plot_kwargs = {}
+        if 'indices' in kwargs:
+            plot_kwargs['indices'] = kwargs['indices']
+            del kwargs['indices']
+        return self.plot(**plot_kwargs).show(**kwargs)
 
-    def plot(self, *args, **kwargs):
+    def plot(self, **kwargs):
         """
-        Plot the Kontsevich graph.
+        Return a graphics object representing the Kontsevich graph.
+
+        INPUT:
+
+        - ``edge_labels`` (boolean, default True) -- if True, show edge labels.
+        - ``indices`` (boolean, default False) -- if True, show indices as
+          edge labels instead of L and R; see :meth:`._latex_`.
         """
         if not 'edge_labels' in kwargs:
             kwargs['edge_labels'] = True        # show edge labels by default
-        return super(KontsevichGraph, self).plot(*args, **kwargs)
+        if 'indices' in kwargs:
+            del kwargs['indices']
+            KG = DiGraph(self)
+            for (k,e) in enumerate(self.edges()):
+                KG.set_edge_label(e[0], e[1], chr(97 + k))
+            return KG.plot(**kwargs)
+        return DiGraph.plot(self, **kwargs)
 
     def union(self, other, same_ground=True):
         """
@@ -509,6 +523,24 @@ class KontsevichGraph(DiGraph):
         wedge = DiGraph([(n + 1, left, 'L'), (n + 1, right, 'R')])
         return KontsevichGraph(DiGraph.union(self, wedge), immutable=True,
                                ground_vertices=self.ground_vertices())
+
+    def _latex_(self):
+        """
+        Multi-differential operator associated to the Kontsevich graph.
+
+        Summation over all indices is implied.
+        """
+        index = {e : chr(97+k) for (k,e) in enumerate(self.edges())}
+        partials = {v : ' '.join('\\partial_%s' % index[e]
+                                 for e in self.incoming_edges(v))
+                    for v in self}
+        bivector = {v : '\\alpha^{%s%s}' % tuple(index[e]
+                                             for e in self.outgoing_edges(v))
+                    for v in self.internal_vertices()}
+        return ' '.join('%s %s' % (partials[v], bivector[v])
+                        for v in self.internal_vertices()) + ' ' + \
+               ' '.join('%s %s' % (partials[v], v)
+                        for v in self.ground_vertices())
 
 
 def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
