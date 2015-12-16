@@ -7,6 +7,13 @@ from sage.groups.perm_gps.permgroup_named import SymmetricGroup
 from sage.structure.factorization import Factorization
 from sage.rings.integer import Integer
 from itertools import product, ifilter
+# for weights:
+from sage.tensor.coordinate_patch import CoordinatePatch
+from sage.tensor.differential_forms import DifferentialForms
+from sage.tensor.differential_form_element import DifferentialForm
+from sage.symbolic.ring import SR
+from sage.symbolic.pynac import I
+from sage.functions.trig import arctan
 
 def filter_unique(it, key = lambda x : x):
     seen = set()
@@ -597,6 +604,50 @@ class KontsevichGraph(DiGraph):
                         for v in self.internal_vertices()) + ' ' + \
                ' '.join('%s%s' % (partials[v], v)
                         for v in self.ground_vertices())
+
+    def weight_integrand(self, simplify_factor=True):
+        """
+        Weight integrand as a rational function.
+
+        The Jacobian determinant of some coordinate transformation.
+        """
+        def arg(x,y):
+            return arctan(y/x) # up to a constant, but it doesn't matter
+        def phi(x,y,a,b):
+            z = (a+I*b-x-I*y)*(a - I*b - x - I*y)
+            w = z.real()
+            q = z.imag()
+            return arg(w,q).full_simplify()
+        n = len(self.internal_vertices())
+        coordinates = lambda v: SR.var(chr(97+2*(v-1)) + ',' + chr(97+2*(v-1)+1)) \
+                                if v in self.internal_vertices() else \
+                                [(0,0), (1,0)][self.ground_vertices().index(v)]
+        internal_coordinates = sum((list(coordinates(v)) for v in
+                                    sorted(self.internal_vertices())), [])
+        U = CoordinatePatch(internal_coordinates)
+        F = DifferentialForms(U)
+        psi = 0
+        two_forms = []
+        for v in self.internal_vertices():
+            x,y = coordinates(v)
+            outgoing_edges = self.outgoing_edges([v])
+            left_target = filter(lambda (x, y, z): z == 'L', outgoing_edges)[0][1]
+            right_target = filter(lambda (x, y, z): z == 'R', outgoing_edges)[0][1]
+            one_forms = []
+            for target in [left_target, right_target]:
+                a,b = coordinates(target)
+                one_form = DifferentialForm(F, 1)
+                for v in internal_coordinates:
+                    index = internal_coordinates.index(v)
+                    one_form[index] = phi(x,y,a,b).diff(v)
+                    if simplify_factor:
+                        one_form[index] = SR(one_form[index]).full_simplify()
+                one_forms.append(one_form)
+            two_form = one_forms[0]*one_forms[1]
+            two_forms.append(two_form)
+        import operator
+        two_n_form = reduce(operator.mul, two_forms, 1)
+        return two_n_form[range(0,2*n)]
 
 
 def kontsevich_graphs(n, m=2, ground_vertices=None, cycles=True, unique=False,
