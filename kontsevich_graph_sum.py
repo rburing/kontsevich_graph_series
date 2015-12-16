@@ -280,13 +280,11 @@ class KontsevichGraphSum(ModuleElement):
             graphs = [KontsevichGraph({v : {}}, ground_vertices=tuple(v),
                                       immutable=True) for v in ground]
             arguments = [self.parent()([(1, h)]) for h in graphs]
-            print [x._terms[0][1].ground_vertices() for x in arguments]
             diff += arguments[0]*self.subs(*(arguments[1:]))
             for i in range(0, k + 1):
                 new_arguments = arguments[0:i]
                 new_arguments += [arguments[i]*arguments[i+1]]
                 new_arguments += arguments[i+2:] if i+2 <= k+1 else []
-                print [x._terms[0][1].ground_vertices() for x in new_arguments]
                 diff += (-(-1)**i)*self.subs(*new_arguments)
             diff += (-1)**k * self.subs(*(arguments[0:-1])) * arguments[-1]
         return diff
