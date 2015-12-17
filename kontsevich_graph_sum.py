@@ -303,6 +303,24 @@ class KontsevichGraphSum(ModuleElement):
                 self_action_terms.append((c, g.add_wedge(target, v)))
         return self.parent()(self_action_terms)
 
+    def in_degrees(self):
+        """
+        In-degrees of ground vertices of terms.
+        """
+        for (c,g) in self:
+            yield tuple(g.in_degree(v) for v in g.ground_vertices())
+
+    def __getitem__(self, indegrees):
+        """
+        Sum of terms with specified in-degrees of the ground vertices.
+        """
+        indegree_terms = []
+        for (c,g) in self:
+            if tuple(g.in_degree(v) for v in g.ground_vertices()) == indegrees:
+                indegree_terms.append((c, g))
+        return self.parent()(indegree_terms)
+
+
 class KontsevichGraphSums(Module):
     """
     The module of Kontsevich graph sums with coefficients in some ring.
