@@ -289,10 +289,11 @@ class KontsevichGraphSum(ModuleElement):
             diff += (-1)**k * self.subs(*(arguments[0:-1])) * arguments[-1]
         return diff
 
-    def self_action(self, target):
+    def self_action(self, target, insert=False):
         """
         Action of a wedge with one leg on a fixed target and the other on
         the whole graph.
+        If ``insert`` is True, replace ``target`` by the top of the wedge.
         """
         self_action_terms = []
         for (c,g) in self:
@@ -300,7 +301,7 @@ class KontsevichGraphSum(ModuleElement):
             for v in g:
                 if v == target:
                     continue                      # skip multiple edges (zero) graphs
-                self_action_terms.append((c, g.add_wedge(target, v)))
+                self_action_terms.append((c, g.add_wedge(target, v, insert)))
         return self.parent()(self_action_terms)
 
     def in_degrees(self):

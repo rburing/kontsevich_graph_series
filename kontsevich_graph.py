@@ -572,9 +572,10 @@ class KontsevichGraph(DiGraph):
             G.delete_vertex(old_ground[n])
         return KontsevichGraph(G, ground_vertices=new_ground, immutable=True)
 
-    def add_wedge(self, left, right):
+    def add_wedge(self, left, right, insert=False):
         """
         Add a wedge with targets ``left`` and ``right``.
+        If ``insert`` is True, replace ``left`` by the top of the wedge.
 
         EXAMPLES::
 
@@ -583,7 +584,15 @@ class KontsevichGraph(DiGraph):
         """
         n = len(self.internal_vertices())
         wedge = DiGraph([(n + 1, left, 'L'), (n + 1, right, 'R')])
-        return KontsevichGraph(DiGraph.union(self, wedge), immutable=True,
+        graph = DiGraph.union(self, wedge)
+        if insert:
+            for src in list(graph.neighbors_in(left)):
+                if src == n + 1:
+                    continue
+                label = graph.edge_label(src, left)
+                graph.delete_edge(src, left)
+                graph.add_edge(src, n + 1, label)
+        return KontsevichGraph(graph, immutable=True,
                                ground_vertices=self.ground_vertices())
 
     def _latex_(self):
