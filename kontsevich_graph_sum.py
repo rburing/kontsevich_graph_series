@@ -375,19 +375,35 @@ class KontsevichGraphSums(Module):
                              immutable=True)
         return self.element_class(self, [(self.base_ring().an_element(), KG)])
 
-    def jacobiator(self, f, g, h):
+    def jacobiator(self, f, g, h, on=None):
         """
         Return the Jacobiator with ground vertices ``f``, ``g``, ``h``
-        in ``self``.
+        in ``self``. If ``on`` is not None, return the Jacobiator on
+        top of the KontsevichGraph ``on`` with target vertices ``f``,
+        ``g``, ``h``, while keeping the ground vertices of ``on``.
         """
-        Jacobi = KontsevichGraph([(1, f, 'L'), (1, g, 'R'), (2, 1, 'L'),
-                                  (2, h, 'R')], ground_vertices=(f, g, h),
+        n = 0
+        if on:
+            n = max(on.internal_vertices())
+        else:
+            assert not (1 in (f,g,h) or 2 in (f,g,h))
+        Jacobi = KontsevichGraph([(n+1, f, 'L'), (n+1, g, 'R'), (n+2, n+1, 'L'),
+                                  (n+2, h, 'R')], ground_vertices=(f, g, h),
                                   immutable=True)
         terms = []
         for cyclic_permutation in ((f,g,h), (g,h,f), (h,f,g)):
             graph = Jacobi.relabel({f : cyclic_permutation[0],
                                     g : cyclic_permutation[1],
                                     h : cyclic_permutation[2]}, inplace=False)
-            graph.ground_vertices((f, g, h))
+            if on:
+                graph = graph.copy(immutable=False)
+                for v in on.ground_vertices():
+                    if not v in graph:
+                        graph.add_vertex(v)
+                graph.ground_vertices(on.ground_vertices())
+                graph = graph.union(on)
+                graph = graph.copy(immutable=True)
+            else:
+                graph.ground_vertices((f, g, h))
             terms.append((self.base_ring()(1), graph))
         return self.element_class(self, terms)
