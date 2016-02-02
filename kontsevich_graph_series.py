@@ -34,8 +34,8 @@ class KontsevichGraphSeries(AlgebraElement):
         EXAMPLES::
 
             sage: K = KontsevichGraphSums(QQ)
-            sage: star_product_terms = {0 : K([1, KontsevichGraph({'F' : {}, \
-            ....:   'G' : {}}, ground_vertices=('F','G'), immutable=True)])}
+            sage: star_product_terms = {0 : K([(1, KontsevichGraph({'F' : {}, \
+            ....:   'G' : {}}, ground_vertices=('F','G'), immutable=True))])}
             sage: S.<h> = KontsevichGraphSeriesRng(K, star_product_terms = \
             ....:   star_product_terms, default_prec = 0)
             sage: S(star_product_terms)
@@ -246,8 +246,8 @@ class KontsevichGraphSeriesRng(Algebra, Nonexact):
 
         EXAMPLES::
             sage: K = KontsevichGraphSums(QQ)
-            sage: star_product_terms = {0 : K([1, KontsevichGraph({'F' : {}, \
-            ....:   'G' : {}}, ground_vertices=('F','G'), immutable=True)])}
+            sage: star_product_terms = {0 : K([(1, KontsevichGraph({'F' : {}, \
+            ....:   'G' : {}}, ground_vertices=('F','G'), immutable=True))])}
             sage: S.<h> = KontsevichGraphSeriesRng(K, star_product_terms = \
             ....:   star_product_terms, default_prec = 0)
         """
