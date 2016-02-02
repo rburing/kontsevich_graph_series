@@ -356,7 +356,8 @@ class KontsevichGraph(DiGraph):
         """
         assert self.internal_vertices_normalized(), \
                "Internal vertices should be normalized."
-
+        if not isinstance(other, KontsevichGraph):
+            return False
         if len(self) != len(other): return False
         if len(self.internal_vertices()) != len(other.internal_vertices()):
             return False
