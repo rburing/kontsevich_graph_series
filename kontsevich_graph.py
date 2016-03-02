@@ -241,7 +241,7 @@ class KontsevichGraph(DiGraph):
         return KontsevichGraph(G, ground_vertices=new_ground, \
                                immutable=immutable)
 
-    def normalize_vertex_labels(self):
+    def normalize_vertex_labels(self, inplace=True):
         """
         Label internal vertices 1, ...,  n.
         Label external vertices F, G, ...
@@ -250,7 +250,7 @@ class KontsevichGraph(DiGraph):
                       enumerate(self.internal_vertices())}
         relabeling.update({v : chr(70 + n) for (n, v) in \
                            enumerate(self.ground_vertices())})
-        self.relabel(relabeling)
+        return self.relabel(relabeling, inplace=inplace)
 
     def internal_vertices_normalized(self):
         """
