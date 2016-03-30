@@ -112,8 +112,10 @@ class KontsevichGraph(DiGraph):
         """
         # Edge labels are important in equality testing:
         kwargs['weighted'] = True
-        # No multiple edges:
-        kwargs['multiedges'] = False
+        # Multiple edges are allowed (but their presence gives zero graphs):
+        kwargs['multiedges'] = True
+        # Loops are allowed:
+        kwargs['loops'] = True
 
         latex = len(args) == 1 and isinstance(args[0], str)
         if latex:
