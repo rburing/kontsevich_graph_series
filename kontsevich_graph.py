@@ -233,7 +233,8 @@ class KontsevichGraph(DiGraph):
             del kwargs['indices']
             KG = DiGraph(self)
             for (k,e) in enumerate(self.edges()):
-                KG.set_edge_label(e[0], e[1], chr(97 + k))
+                KG.delete_edge(e)
+                KG.add_edge((e[0], e[1], chr(97 + k)))
             return KG.plot(**kwargs)
         if len(self.ground_vertices()) == 2 and 'upright' in kwargs:
             del kwargs['upright']
@@ -597,8 +598,9 @@ class KontsevichGraph(DiGraph):
         for g in attachment_graphs:
             G = DiGraph.union(G,g)
         for n in range(0, len(self.ground_vertices())):
-            for src in G.neighbors_in(old_ground[n]):
-                label = G.edge_label(src, old_ground[n])
+            for edge_in in G.incoming_edges(old_ground[n]):
+                src = edge_in[0]
+                label = edge_in[2]
                 G.add_edge(src, attachment_points[n][src], label)
             G.delete_vertex(old_ground[n])
         return KontsevichGraph(G, ground_vertices=new_ground, immutable=True)
@@ -617,11 +619,12 @@ class KontsevichGraph(DiGraph):
         wedge = DiGraph([(n + 1, left, 'L'), (n + 1, right, 'R')])
         graph = DiGraph.union(self, wedge)
         if insert:
-            for src in list(graph.neighbors_in(left)):
+            for edge_in in graph.incoming_edges(left):
+                src = edge_in[0]
                 if src == n + 1:
                     continue
-                label = graph.edge_label(src, left)
-                graph.delete_edge(src, left)
+                label = edge_in[2]
+                graph.delete_edge(edge_in)
                 graph.add_edge(src, n + 1, label)
         return KontsevichGraph(graph, immutable=True,
                                ground_vertices=self.ground_vertices())
