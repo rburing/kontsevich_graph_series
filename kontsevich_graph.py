@@ -7,6 +7,10 @@ from sage.groups.perm_gps.permgroup_named import SymmetricGroup
 from sage.structure.factorization import Factorization
 from sage.rings.integer import Integer
 from itertools import product, ifilter
+# for 2d geometry:
+from sage.matrix.constructor import matrix
+from sage.modules.free_module_element import vector
+from sage.functions.trig import sin, cos
 # for weights:
 from sage.tensor.coordinate_patch import CoordinatePatch
 from sage.tensor.differential_forms import DifferentialForms
@@ -204,6 +208,9 @@ class KontsevichGraph(DiGraph):
         if 'indices' in kwargs:
             plot_kwargs['indices'] = kwargs['indices']
             del kwargs['indices']
+        if 'upright' in kwargs:
+            plot_kwargs['upright'] = kwargs['upright']
+            del kwargs['upright']
         return self.plot(**plot_kwargs).show(**kwargs)
 
     def plot(self, **kwargs):
@@ -215,6 +222,8 @@ class KontsevichGraph(DiGraph):
         - ``edge_labels`` (boolean, default True) -- if True, show edge labels.
         - ``indices`` (boolean, default False) -- if True, show indices as
           edge labels instead of L and R; see :meth:`._latex_`.
+        - ``upright`` (boolean, default False) -- if True, try to plot the
+          graph with the ground vertices on the bottom and the rest on top.
         """
         if not 'edge_labels' in kwargs:
             kwargs['edge_labels'] = True        # show edge labels by default
@@ -224,6 +233,28 @@ class KontsevichGraph(DiGraph):
             for (k,e) in enumerate(self.edges()):
                 KG.set_edge_label(e[0], e[1], chr(97 + k))
             return KG.plot(**kwargs)
+        if len(self.ground_vertices()) == 2 and 'upright' in kwargs:
+            del kwargs['upright']
+            kwargs['save_pos'] = True
+            DiGraph.plot(self, **kwargs)
+            positions = self.get_pos()
+            # translate F to origin:
+            F_pos = vector(positions[self.ground_vertices()[0]])
+            for p in positions:
+                positions[p] = list(vector(positions[p]) - F_pos)
+            # scale F - G distance to 1:
+            G_len = abs(vector(positions[self.ground_vertices()[1]]))
+            for p in positions:
+                positions[p] = list(vector(positions[p])/G_len)
+            # rotate the vector F - G to (1,0)
+            from math import atan2
+            theta = -atan2(positions[self.ground_vertices()[1]][1], positions[self.ground_vertices()[1]][0])
+            for p in positions:
+                positions[p] = list(matrix([[cos(theta),-(sin(theta))],[sin(theta),cos(theta)]]) * vector(positions[p]))
+            # flip if most things are below the x-axis:
+            if len([(x,y) for (x,y) in positions.values() if y < 0])/len(self.internal_vertices()) > 0.5:
+                for p in positions:
+                    positions[p] = [positions[p][0], -positions[p][1]]
         return DiGraph.plot(self, **kwargs)
 
     def union(self, other, same_ground=True):
