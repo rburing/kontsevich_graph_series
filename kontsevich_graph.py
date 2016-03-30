@@ -104,8 +104,8 @@ class KontsevichGraph(DiGraph):
             Kontsevich graph with 0 vertices on 1 ground vertices
             sage: KontsevichGraph(('F','G'))
             Kontsevich graph with 0 vertices on 2 ground vertices
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....:                  'G' : 'R'}}, ground_vertices=('F', 'G'))
+            sage: KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R')], \
+            ....:                 ground_vertices=('F', 'G'))
             Kontsevich graph with 1 vertices on 2 ground vertices
             sage: KontsevichGraph('\\alpha^{ab} \\partial_a F \\partial_b G')
             Kontsevich graph with 1 vertices on 2 ground vertices
@@ -159,8 +159,8 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}}, ground_vertices=('F', 'G'))
+            sage: KG = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R')], \
+            ....: ground_vertices=('F', 'G'))
             sage: KG.ground_vertices()
             ('F', 'G')
             sage: KG.ground_vertices(('F',))
@@ -412,10 +412,10 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}}, ground_vertices=('F','G'))
-            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            sage: KG1 = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R')], \
+            ....: ground_vertices=('F','G'))
+            sage: KG2 = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R'), \
+            ....: (2, 'F', 'L'), (2, 'G', 'R')], \
             ....: ground_vertices=('F','G'))
             sage: KG1*KG1 == KG2
             True
@@ -440,12 +440,12 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG1 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}}, ground_vertices=('F','G'))
+            sage: KG1 = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R')], \
+            ....: ground_vertices=('F','G'))
             sage: KG1^1 == KG1
             True
-            sage: KG2 = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            sage: KG2 = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R'), \
+            ....: (2, 'F', 'L'), (2, 'G', 'R')], \
             ....: ground_vertices=('F','G'))
             sage: KG1^2 == KG2
             True
@@ -477,9 +477,8 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
-            ....: ground_vertices=('F','G'))
+            sage: KG = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R'), \
+            ....: (2, 'F', 'L'), (2, 'G', 'R')], ground_vertices=('F','G'))
             sage: KG.factor()
             (Kontsevich graph with 1 vertices on 2 ground vertices)^2
 
@@ -504,11 +503,11 @@ class KontsevichGraph(DiGraph):
 
         EXAMPLES::
 
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}}, ground_vertices=('F','G')).is_prime()
+            sage: KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R')], \
+            ....: ground_vertices=('F','G')).is_prime()
             True
-            sage: KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', \
-            ....: 'G' : 'R'}, 2 : {'F' : 'L', 'G' : 'R'}}, \
+            sage: KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R'), \
+            ....: (2, 'F', 'L'), (2, 'G', 'R')], \
             ....: ground_vertices=('F','G')).is_prime()
             False
 

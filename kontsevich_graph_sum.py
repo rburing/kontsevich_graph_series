@@ -371,7 +371,7 @@ class KontsevichGraphSums(Module):
             ground vertices)
 
         """
-        KG = KontsevichGraph({'F' : {}, 'G' : {}, 1 : {'F' : 'L', 'G' : 'R'}},
+        KG = KontsevichGraph([(1, 'F', 'L'), (1, 'G', 'R')],
                              ground_vertices=('F', 'G'),
                              immutable=True)
         return self.element_class(self, [(self.base_ring().an_element(), KG)])
