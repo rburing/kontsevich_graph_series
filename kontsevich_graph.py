@@ -369,13 +369,11 @@ class KontsevichGraph(DiGraph):
             raise ValueError, "internal_vertex should be an internal vertex."
 
         KG = self if inplace else self.copy(immutable=False)
-        targets = KG.neighbors_out(internal_vertex)
-        assert len(targets) == 2
-        [t1,t2] = targets
-        l1 = KG.edge_label(internal_vertex, t1)
-        l2 = KG.edge_label(internal_vertex, t2)
-        KG.set_edge_label(internal_vertex, t1, l2)
-        KG.set_edge_label(internal_vertex, t2, l1)
+        edges_out = KG.outgoing_edges([internal_vertex])
+        assert len(edges_out) == 2
+        KG.delete_edges(edges_out)
+        KG.add_edges([(edges_out[0][0], edges_out[0][1], edges_out[1][2]),
+                      (edges_out[1][0], edges_out[1][1], edges_out[0][2])])
         return KG
 
     def __eq__(self, other):
